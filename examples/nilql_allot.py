@@ -3,7 +3,7 @@ import asyncio
 import json
 import sys
 
-from nilsvwrappers import NilQLWrapper
+from secretvault import NilQLWrapper
 
 
 async def main():

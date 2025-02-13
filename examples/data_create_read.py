@@ -3,7 +3,7 @@ import asyncio
 import json
 import sys
 
-from nilsvwrappers import SecretVaultWrapper, OperationType
+from secretvault import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update schema ID with your own value

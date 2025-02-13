@@ -1,8 +1,8 @@
-nilsvwrappers module
+secretvault module
 =============
 
 
-.. automodule:: nilsvwrappers
+.. automodule:: secretvault
    :members:
    :undoc-members:
    :show-inheritance:

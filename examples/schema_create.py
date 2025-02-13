@@ -3,7 +3,7 @@ import asyncio
 import json
 import sys
 
-from nilsvwrappers import SecretVaultWrapper
+from secretvault import SecretVaultWrapper
 from org_config import org_config
 
 # Load the schema from schema.json

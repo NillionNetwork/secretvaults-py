@@ -1,16 +1,16 @@
-nilsvwrappers
+secretvault
 =============
 
 Wrapper classes for simplifying usage of Nillion's Secret Vault and the nilQL encryption and decryption library.
 
 |pypi| |readthedocs| |actions| |coveralls|
 
-.. |pypi| image:: https://badge.fury.io/py/nilsvwrappers.svg
-   :target: https://badge.fury.io/py/nilsvwrappers
+.. |pypi| image:: https://badge.fury.io/py/secretvault.svg
+   :target: https://badge.fury.io/py/secretvault
    :alt: PyPI version and link.
 
-.. |readthedocs| image:: https://readthedocs.org/projects/nilsvwrappers/badge/?version=latest
-   :target: https://nilsvwrappers.readthedocs.io/en/latest/?badge=latest
+.. |readthedocs| image:: https://readthedocs.org/projects/secretvault/badge/?version=latest
+   :target: https://secretvault.readthedocs.io/en/latest/?badge=latest
    :alt: Read the Docs documentation status.
 
 .. |actions| image:: https://github.com/nillionnetwork/nillion-sv-wrappers-py/workflows/lint-test-cover-docs/badge.svg
@@ -150,8 +150,8 @@ The library can be imported in the usual ways:
 
 .. code-block:: python
 
-    import nilsvwrappers
-    from nilsvwrappers import *
+    import secretvault
+    from secretvault import *
 
 To run the examples below, first install the package:
 
@@ -219,14 +219,14 @@ The subset of the unit tests included in the module itself and can be executed u
 
 .. code-block:: bash
 
-    python src/nilsvwrappers/secret_vault_wrapper.py -v
+    python src/secretvault/secret_vault_wrapper.py -v
 
 Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
 
 .. code-block:: bash
 
     python -m pip install ".[lint]"
-    python -m pylint src/nilsvwrappers
+    python -m pylint src/secretvault
 
 Contributions
 -------------
@@ -241,6 +241,6 @@ The version number format for this library and the changes to the library associ
 Publishing
 ----------
 
-This library can be published as a `package on PyPI <https://pypi.org/project/nilsvwrappers>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
+This library can be published as a `package on PyPI <https://pypi.org/project/secretvault>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
 
 Ensure that any links in this README document to the Read the Docs documentation of this package (or its dependencies) have appropriate version numbers. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions.

@@ -1,6 +1,6 @@
 [project]
-name = "nilsvwrappers"
-version = "1.0.10"
+name = "secretvault"
+version = "0.0.0a1"
 description = "Wrappers for Nillion's Secret Vault and nilQL"
 license = {text = "MIT"}
 readme = "README.rst"
@@ -46,4 +46,4 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules --ignore=docs --ignore=example --cov=nilsvwrappers --cov-report term-missing"
+addopts = "--doctest-modules --ignore=docs --ignore=example --cov=secretvault --cov-report term-missing"

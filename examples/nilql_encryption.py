@@ -2,7 +2,7 @@
 import asyncio
 import sys
 
-from nilsvwrappers import NilQLWrapper  # Adjust this import based on your module structure
+from secretvault import NilQLWrapper  # Adjust this import based on your module structure
 
 
 async def main():
