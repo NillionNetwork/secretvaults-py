@@ -3,7 +3,7 @@ import asyncio
 import json
 import sys
 
-from secretvault import SecretVaultWrapper  # Adjust import if needed
+from secretvaults import SecretVaultWrapper
 from org_config import org_config
 
 

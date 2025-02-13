@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/secretvault
+      url: https://pypi.org/p/secretvaults
     permissions:
       id-token: write
     steps:

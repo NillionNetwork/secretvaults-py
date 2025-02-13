@@ -3,7 +3,7 @@ import asyncio
 import json
 import sys
 
-from secretvault import SecretVaultWrapper, OperationType
+from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update QUERY ID with your own value

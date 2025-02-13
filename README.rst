@@ -1,24 +1,24 @@
-secretvault
+secretvaults
 =============
 
 Wrapper classes for simplifying usage of Nillion's Secret Vault and the nilQL encryption and decryption library.
 
 |pypi| |readthedocs| |actions| |coveralls|
 
-.. |pypi| image:: https://badge.fury.io/py/secretvault.svg
-   :target: https://badge.fury.io/py/secretvault
+.. |pypi| image:: https://badge.fury.io/py/secretvaults.svg
+   :target: https://badge.fury.io/py/secretvaults
    :alt: PyPI version and link.
 
-.. |readthedocs| image:: https://readthedocs.org/projects/secretvault/badge/?version=latest
-   :target: https://secretvault.readthedocs.io/en/latest/?badge=latest
+.. |readthedocs| image:: https://readthedocs.org/projects/secretvaults/badge/?version=latest
+   :target: https://secretvaults.readthedocs.io/en/latest/?badge=latest
    :alt: Read the Docs documentation status.
 
 .. |actions| image:: https://github.com/nillionnetwork/nillion-sv-wrappers-py/workflows/lint-test-cover-docs/badge.svg
    :target: https://github.com/nillionnetwork/nillion-sv-wrappers-py/actions/workflows/lint-test-cover-docs.yml
    :alt: GitHub Actions status.
 
-.. |coveralls| image:: https://coveralls.io/repos/github/NillionNetwork/secretvault-py/badge.svg?branch=main
-   :target: https://coveralls.io/github/NillionNetwork/secretvault-py?branch=main
+.. |coveralls| image:: https://coveralls.io/repos/github/NillionNetwork/secretvaults-py/badge.svg?branch=main
+   :target: https://coveralls.io/github/NillionNetwork/secretvaults-py?branch=main
    :alt: Coveralls test coverage summary.
 
 Description and Purpose
@@ -146,18 +146,21 @@ Delete: Remove query across nodes (``/api/v1/queries``)
 Installation and Usage
 -----------------------
 
+You can install the package using pip:
+
+.. code-block:: bash
+
+    pip install secretvaults
+
+
 The library can be imported in the usual ways:
 
 .. code-block:: python
 
-    import secretvault
-    from secretvault import *
+    import secretvaults
+    from secretvaults import *
 
-To run the examples below, first install the package:
 
-.. code-block:: bash
-
-    python -m pip install .
 
 Standalone NilQLWrapper Example
 -------------------------------
@@ -219,19 +222,19 @@ The subset of the unit tests included in the module itself and can be executed u
 
 .. code-block:: bash
 
-    python src/secretvault/secret_vault_wrapper.py -v
+    python src/secretvaults/secret_vault_wrapper.py -v
 
 Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
 
 .. code-block:: bash
 
     python -m pip install ".[lint]"
-    python -m pylint src/secretvault
+    python -m pylint src/secretvaults
 
 Contributions
 -------------
 
-To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/secretvault-py>`__ for this library.
+To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/secretvaults-py>`__ for this library.
 
 Versioning
 ----------
@@ -241,6 +244,6 @@ The version number format for this library and the changes to the library associ
 Publishing
 ----------
 
-This library can be published as a `package on PyPI <https://pypi.org/project/secretvault>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
+This library can be published as a `package on PyPI <https://pypi.org/project/secretvaults>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
 
 Ensure that any links in this README document to the Read the Docs documentation of this package (or its dependencies) have appropriate version numbers. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions.

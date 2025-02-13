@@ -1,8 +1,8 @@
-secretvault module
+secretvaults module
 =============
 
 
-.. automodule:: secretvault
+.. automodule:: secretvaults
    :members:
    :undoc-members:
    :show-inheritance:

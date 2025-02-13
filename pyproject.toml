@@ -1,6 +1,6 @@
 [project]
-name = "secretvault"
-version = "0.0.0a1"
+name = "secretvaults"
+version = "0.0.0a0"
 description = "Wrappers for Nillion's Secret Vault and nilQL"
 license = {text = "MIT"}
 readme = "README.rst"
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/NillionNetwork/secretvault-py"
+Repository = "https://github.com/NillionNetwork/secretvaults-py"
 
 [project.optional-dependencies]
 docs = [
@@ -46,4 +46,4 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules --ignore=docs --ignore=example --cov=secretvault --cov-report term-missing"
+addopts = "--doctest-modules --ignore=docs --ignore=example --cov=secretvaults --cov-report term-missing"
