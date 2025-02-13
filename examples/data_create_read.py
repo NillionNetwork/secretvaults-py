@@ -3,11 +3,11 @@ import asyncio
 import json
 import sys
 
-from nilsvwrappers import SecretVaultWrapper
+from nilsvwrappers import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "ac0e37ec-de37-4a96-840c-8277dc472e2d"
+SCHEMA_ID = "167cabf7-2003-4445-9531-9bd3f152042c"
 
 # $allot signals that the value will be encrypted to one $share per node before writing to the collection
 web3_experience_survey_data = [
@@ -21,8 +21,15 @@ web3_experience_survey_data = [
     {
         "years_in_web3": {"$allot": 1},
         "responses": [
+            {"rating": 5, "question_number": 1},
+            {"rating": 3, "question_number": 2},
+        ],
+    },
+    {
+        "years_in_web3": {"$allot": 5},
+        "responses": [
             {"rating": 2, "question_number": 1},
-            {"rating": 4, "question_number": 2},
+            {"rating": 4, "question_number": 5},
         ],
     },
 ]
@@ -34,7 +41,12 @@ async def main():
     """
     try:
         # Initialize the SecretVaultWrapper instance with the org configuration and schema ID
-        collection = SecretVaultWrapper(org_config["nodes"], org_config["org_credentials"], SCHEMA_ID)
+        collection = SecretVaultWrapper(
+            org_config["nodes"],
+            org_config["org_credentials"],
+            SCHEMA_ID,
+            operation=OperationType.SUM.value,  # for calculating SUM of years_in_web3 with a query, default is STORE
+        )
         await collection.init()
 
         # Write data to nodes
@@ -53,7 +65,7 @@ async def main():
         print("\n".join(new_ids))
 
         # Read data from nodes
-        data_read = await collection.read_from_nodes({})
+        data_read = await collection.read_from_nodes()
         print("📚 Read new records:", (json.dumps(data_read[: len(web3_experience_survey_data)], indent=2)))
 
     except RuntimeError as error:

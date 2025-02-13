@@ -1,6 +1,6 @@
 [project]
 name = "nilsvwrappers"
-version = "1.0.9"
+version = "1.0.10"
 description = "Wrappers for Nillion's Secret Vault and nilQL"
 license = {text = "MIT"}
 readme = "README.rst"

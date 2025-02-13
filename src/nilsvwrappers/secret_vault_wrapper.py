@@ -418,7 +418,7 @@ class SecretVaultWrapper:
                 jwt_token = await self.generate_node_token(node["did"])
                 payload = {
                     "schema": self.schema_id,
-                    "filter": data_filter if data_filter else {},
+                    "filter": data_filter or {},
                 }
                 result = await self.make_request(
                     node["url"],
@@ -493,7 +493,7 @@ class SecretVaultWrapper:
                 payload = {
                     "schema": self.schema_id,
                     "update": {"$set": node_data},
-                    "filter": data_filter if data_filter else {},
+                    "filter": data_filter or {},
                 }
 
                 # Make the request to the node's update endpoint
@@ -540,7 +540,7 @@ class SecretVaultWrapper:
                 # Prepare the payload for the delete request
                 payload = {
                     "schema": self.schema_id,
-                    "filter": data_filter if data_filter else {},
+                    "filter": data_filter or {},
                 }
                 # Make the request to the node's delete endpoint
                 result = await self.make_request(
@@ -560,3 +560,174 @@ class SecretVaultWrapper:
         results = await asyncio.gather(*tasks)
 
         return results
+
+    async def get_queries(self) -> Dict[str, Any]:
+        """
+        Lists queries from the first node (as there is parity between them).
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the response data from the "queries"
+                            endpoint of the first node, which typically includes a list of
+                            queries or other related data.
+
+        Raises:
+            Exception: If there is an issue generating the JWT token or making the request.
+
+        Example:
+            queries = await wrapper.get_queries()
+        """
+        # Generate a token for the first node
+        jwt_token = await self.generate_node_token(self.nodes[0]["did"])
+
+        # Make a request to the queries endpoint of the first node
+        result = await self.make_request(
+            self.nodes[0]["url"],
+            "queries",
+            jwt_token,
+            {},
+            method=HTTPMethod.GET,
+        )
+
+        return result
+
+    async def create_query(
+        self, query: Dict[str, Any], schema_id: str, query_name: str, query_id: str = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Creates a new query on all nodes in the cluster concurrently.
+
+        Args:
+            query (Dict[str, Any]): The query definition to be created.
+            query_name (str): The name of the query to be created.
+            schema_id (str): The schema_id the query will be based on.
+            query_id (str, optional): A custom query ID. If not provided, a new UUID is generated.
+
+        Returns:
+            List[Dict[str, Any]]: The response from the nodes.
+
+        Raises:
+            Exception: If there is an issue generating the JWT token or making the request.
+
+        Example:
+            results = await wrapper.create_query(query, "schemaXXXXXXXXX", "NewQuery")
+        """
+        if not query_id:
+            query_id = str(uuid.uuid4())  # Generate a new query ID if not provided
+
+        # Construct the payload for query creation
+        query_payload = {
+            "_id": query_id,
+            "name": query_name,
+            "schema": schema_id,
+            "variables": query["variables"],
+            "pipeline": query["pipeline"],
+        }
+
+        # Define an async function to handle the request for a single node
+        async def create_query_for_node(node: Dict[str, str]) -> Dict[str, Any]:
+            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            result = await self.make_request(
+                node["url"],
+                "queries",
+                jwt_token,
+                query_payload,
+            )
+            return {
+                "node": node["url"],
+                "result": result,
+            }
+
+        # Gather tasks for all nodes and execute them in parallel
+        tasks = [create_query_for_node(node) for node in self.nodes]
+        results = await asyncio.gather(*tasks)
+
+        return results
+
+    async def delete_query(self, query_id: str) -> List[Dict[str, Any]]:
+        """
+        Removes a query from all nodes in the cluster concurrently.
+
+        Args:
+            query_id (str): The ID of the query to be deleted from all nodes.
+
+        Returns:
+            List[Dict[str, Any]]: The response from the nodes.
+
+        Raises:
+            Exception: If there is an issue generating the JWT token or making the request.
+
+        Example:
+            results = await wrapper.delete_query("XXXXXXXX")
+        """
+
+        # Define an async function to handle the request for a single node
+        async def delete_query_from_node(node: Dict[str, str]) -> Dict[str, Any]:
+            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            result = await self.make_request(
+                node["url"],
+                "queries",
+                jwt_token,
+                {"id": query_id},
+                method=HTTPMethod.DELETE,
+            )
+            return {"node": node["url"], "result": result}
+
+        # Gather tasks for all nodes and execute them in parallel
+        tasks = [delete_query_from_node(node) for node in self.nodes]
+        results = await asyncio.gather(*tasks)
+
+        return results
+
+    async def query_execute_on_nodes(self, query_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Executes a query on all nodes and unifies the results.
+
+        Args:
+            query_payload (Dict[str, Any]): The query payload to execute.
+
+        Returns:
+            List[Dict[str, Any]]: A list of unified records resulting from executing the query across all nodes.
+        """
+
+        async def execute_query_on_node(node: Dict[str, str]) -> Dict[str, Any]:
+            try:
+                jwt_token = await self.generate_node_token(node["did"])
+                result = await self.make_request(
+                    node["url"],
+                    "queries/execute",
+                    jwt_token,
+                    query_payload,
+                )
+                return {
+                    "node": node["url"],
+                    "data": result.get("data", []),
+                }
+            except RuntimeError as e:
+                print(f"❌ Failed to execute query on {node['url']}: {str(e)}")
+                return {"node": node["url"], "error": str(e)}
+
+        # Execute queries in parallel on all nodes
+        tasks = [execute_query_on_node(node) for node in self.nodes]
+        results_from_all_nodes = await asyncio.gather(*tasks)
+
+        # Collect all data from nodes
+        all_shares = []
+        for node_result in results_from_all_nodes:
+            if "data" in node_result:
+                all_shares.extend(node_result["data"])
+
+        # TEMP START: Recursive function to replace '%share' with '$share' in all structures
+        def replace_share_keys(data):
+            if isinstance(data, dict):
+                return {("$share" if k == "%share" else k): replace_share_keys(v) for k, v in data.items()}
+            if isinstance(data, list):
+                return [replace_share_keys(item) for item in data]
+            return data
+
+        all_shares = replace_share_keys(all_shares)
+        # TEMP END
+
+        # Unify the results directly
+        recombined_result = await self.nilql_wrapper.unify(all_shares)
+
+        return recombined_result

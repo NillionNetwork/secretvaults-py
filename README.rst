@@ -71,7 +71,6 @@ Delete: Remove schema definition (``/api/v1/schemas``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Deletes schema across all nodes
-- Preserves data integrity
 
 
 Data Operations
@@ -110,6 +109,38 @@ Flush: Remove all documents in a schema collection (``/api/v1/data/flush``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Removes all data across nodes from a schema collection
+
+
+Query Operations
+------------------
+
+Create: Deploy query across nodes (``/api/v1/queries``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Creates query with optional custom ID
+- Includes Mongo Aggregation Pipeline and custom Runtime Variables
+- Distributes to all nodes
+
+
+Execute: Runs the query across nodes (``/api/v1/queries/execute``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Executes the query on all nodes with the provided variables
+- Recombines encrypted shares or aggregation results marked ``$share`` from nodes to decrypt specified fields automatically
+- Returns decrypted record
+
+
+Read: List available queries (``/api/v1/queries``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Retrieves available queries
+- Shows query definition and structure
+
+
+Delete: Remove query across nodes (``/api/v1/queries``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Deletes query across all nodes
 
 
 Installation and Usage
