@@ -127,6 +127,12 @@ The library can be imported in the usual ways:
     import nilsvwrappers
     from nilsvwrappers import *
 
+To run the examples below, first do:
+
+.. code-block:: bash
+
+    python -m pip install nilsvwrappers
+
 Standalone NilQLWrapper Example
 ^^^^^^^^
 An example workflow that demonstrates use of the wrapper is presented below:
