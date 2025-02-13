@@ -1,8 +1,8 @@
-nillion-sv-wrappers module
+nilsvwrappers module
 =============
 
 
-.. automodule:: nillion-sv-wrappers
+.. automodule:: nilsvwrappers
    :members:
    :undoc-members:
    :show-inheritance:

@@ -11,7 +11,7 @@ from ecdsa import SigningKey, SECP256k1
 
 from .nilql_wrapper import NilQLWrapper, OperationType
 
-
+# pylint: disable=dangerous-default-value,too-many-instance-attributes
 class SecretVaultWrapper:
     """
     SecretVaultWrapper manages distributed data storage across multiple nodes.
@@ -32,7 +32,7 @@ class SecretVaultWrapper:
         nodes: List[Dict[str, str]],
         credentials: Dict[str, str],
         schema_id: str = None,
-        operation: str = OperationType.STORE,
+        operation: str = OperationType.STORE.value,
         token_expiry_seconds: int = 60,
     ):
         self.nodes = nodes
@@ -43,9 +43,6 @@ class SecretVaultWrapper:
         self.token_expiry_seconds = token_expiry_seconds
         self.nilql_wrapper = None
         self.signer = None
-
-        # Continue the initialization
-        self.init()
 
     async def init(self) -> NilQLWrapper:
         """
@@ -125,9 +122,7 @@ class SecretVaultWrapper:
         """
         tokens = []
         for node in self.nodes:
-            token = await self.generate_node_token(
-                node["did"],
-            )
+            token = await self.generate_node_token(node["did"])
             tokens.append({"node": node["url"], "token": token})
         return tokens
 
@@ -167,8 +162,8 @@ class SecretVaultWrapper:
                     method,
                     url,
                     headers=headers,
-                    json=payload if method == HTTPMethod.POST else None,
-                    params=payload if method != HTTPMethod.POST else None,
+                    json=payload if method != HTTPMethod.GET else None,
+                    params=payload if method == HTTPMethod.GET else None,
                 ) as response:
                     if response.status != 200:
                         raise ConnectionError(f"Error: {response.status}, body: {await response.text()}")
@@ -393,7 +388,7 @@ class SecretVaultWrapper:
                     payload,
                 )
                 return {"node": node["url"], "result": result}
-            except Exception as e:
+            except RuntimeError as e:
                 print(f"❌ Failed to write to {node['url']}: {str(e)}")
                 return {"node": node["url"], "error": str(e)}
 
@@ -432,7 +427,7 @@ class SecretVaultWrapper:
                     payload,
                 )
                 return {"node": node["url"], "data": result.get("data", [])}
-            except Exception as e:
+            except RuntimeError as e:
                 print(f"❌ Failed to read from {node['url']}: {str(e)}")
                 return {"node": node["url"], "error": str(e)}
 
@@ -510,12 +505,12 @@ class SecretVaultWrapper:
                 )
                 return {"node": node["url"], "result": result}
 
-            except Exception as e:
+            except RuntimeError as e:
                 print(f"❌ Failed to write to {node['url']}: {str(e)}")
                 return {"node": node["url"], "error": str(e)}
 
         # Run the node update tasks in parallel using asyncio.gather
-        tasks = [update_node(i, node, transformed_data) for i, node in enumerate(self.nodes)]
+        tasks = [update_node(i, node, transformed_data[0]) for i, node in enumerate(self.nodes)]
         results = await asyncio.gather(*tasks)
 
         return results
@@ -556,7 +551,7 @@ class SecretVaultWrapper:
                 )
                 return {"node": node["url"], "result": result}
 
-            except Exception as e:
+            except RuntimeError as e:
                 print(f"❌ Failed to delete from {node['url']}: {str(e)}")
                 return {"node": node["url"], "error": str(e)}
 

@@ -1,5 +1,5 @@
 ======
-nillion-sv-wrappers
+nilsvwrappers
 ======
 
 Wrapper classes for simplifying usage of Nillion's Secret Vault and the nilQL encryption and decryption library.
@@ -7,12 +7,12 @@ Wrapper classes for simplifying usage of Nillion's Secret Vault and the nilQL en
 
 |pypi| |readthedocs| |actions| |coveralls|
 
-.. |pypi| image:: https://badge.fury.io/py/nillion-sv-wrappers.svg#
-   :target: https://badge.fury.io/py/nillion-sv-wrappers
+.. |pypi| image:: https://badge.fury.io/py/nilsvwrappers.svg#
+   :target: https://badge.fury.io/py/nilsvwrappers
    :alt: PyPI version and link.
 
-.. |readthedocs| image:: https://readthedocs.org/projects/nillion-sv-wrappers/badge/?version=latest
-   :target: https://nillion-sv-wrappers.readthedocs.io/en/latest/?badge=latest
+.. |readthedocs| image:: https://readthedocs.org/projects/nilsvwrappers/badge/?version=latest
+   :target: https://nilsvwrappers.readthedocs.io/en/latest/?badge=latest
    :alt: Read the Docs documentation status.
 
 .. |actions| image:: https://github.com/nillionnetwork/nillion-sv-wrappers-py/workflows/lint-test-cover-docs/badge.svg#
@@ -33,8 +33,8 @@ The library can be imported in the usual ways:
 
 .. code-block:: python
 
-    import nillion-sv-wrappers
-    from nillion-sv-wrappers import *
+    import nilsvwrappers
+    from nilsvwrappers import *
 
 Example
 ^^^^^^^^
@@ -42,7 +42,7 @@ An example workflow that demonstrates use of the wrapper is presented below:
 
 .. code-block:: python
 
-    import nillion-sv-wrappers
+    import nilsvwrappers
 
 Development
 -----------
@@ -75,14 +75,14 @@ The subset of the unit tests included in the module itself and can be executed u
 
 .. code-block:: bash
 
-    python src/nillion-sv-wrappers/secret_vault_wrapper.py -v
+    python src/nilsvwrappers/secret_vault_wrapper.py -v
 
 Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
 
 .. code-block:: bash
 
     python -m pip install ".[lint]"
-    python -m pylint src/nillion-sv-wrappers
+    python -m pylint src/nilsvwrappers
 
 Contributions
 ^^^^^^^^^^^^^

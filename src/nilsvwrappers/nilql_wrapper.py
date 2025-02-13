@@ -38,7 +38,7 @@ class NilQLWrapper:
     def __init__(
         self,
         cluster: dict,
-        operation: str = OperationType.STORE,
+        operation: str = OperationType.STORE.value,
         secret_key: Optional[nilql.SecretKey] = None,
         key_type: KeyType = KeyType.CLUSTER,
     ):

@@ -22,7 +22,7 @@ jobs:
         continue-on-error: true
         run: |
           pip install -U .[lint,test]
-          python -m pylint nillion-sv-wrappers # Check against linting rules.
+          python -m pylint nilsvwrappers # Check against linting rules.
           python -m pytest # Run tests.
       - name: Publish coverage results.
         continue-on-error: true
