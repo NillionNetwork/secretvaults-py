@@ -17,8 +17,8 @@ Wrapper classes for simplifying usage of Nillion's Secret Vault and the nilQL en
    :target: https://github.com/nillionnetwork/nillion-sv-wrappers-py/actions/workflows/lint-test-cover-docs.yml
    :alt: GitHub Actions status.
 
-.. |coveralls| image:: https://coveralls.io/repos/github/NillionNetwork/nillion-sv-wrappers-py/badge.svg?branch=main
-   :target: https://coveralls.io/github/NillionNetwork/nillion-sv-wrappers-py?branch=main
+.. |coveralls| image:: https://coveralls.io/repos/github/NillionNetwork/secretvault-py/badge.svg?branch=main
+   :target: https://coveralls.io/github/NillionNetwork/secretvault-py?branch=main
    :alt: Coveralls test coverage summary.
 
 Description and Purpose
@@ -231,7 +231,7 @@ Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
 Contributions
 -------------
 
-To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/nillion-sv-wrappers-py>`__ for this library.
+To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/secretvault-py>`__ for this library.
 
 Versioning
 ----------

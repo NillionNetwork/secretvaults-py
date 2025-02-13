@@ -4,7 +4,7 @@ version = "0.0.0a1"
 description = "Wrappers for Nillion's Secret Vault and nilQL"
 license = {text = "MIT"}
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "python-dotenv~=1.0.1",
     "requests~=2.32",
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/NillionNetwork/nillion-sv-wrappers-py"
+Repository = "https://github.com/NillionNetwork/secretvault-py"
 
 [project.optional-dependencies]
 docs = [
