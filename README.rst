@@ -27,6 +27,97 @@ Description and Purpose
 -----------------------
 This wrapper provides functions to simplify usage of Nillion's SecretVault and nilQL.
 
+
+NilQLWrapper: Lightweight wrapper for encryption and decryption using nilQL
+============================================================================
+
+- Encrypts data into shares for distributed storage across nodes
+- Handles structured data with ``$allot`` markers for selective encryption
+- Recombines shares and decrypts data marked ``$share`` using unify
+- Manages secret keys for encryption/decryption operations
+- Recombines and decrypts shares to recover original data
+- Maintains compatibility with SecretVault timestamps
+- No node configuration required when used standalone
+
+
+SecretVaultWrapper: Wrapper for Secret Vault API operations
+============================================================
+
+Authentication
+--------------
+
+- Handles JWT creation and management per node
+- Manages node authentication automatically
+
+
+Schema Operations
+------------------
+
+Create: Deploy schema across nodes (``/api/v1/schemas``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Creates schemas with optional custom ID
+- Validates schema structure
+- Distributes to all nodes
+
+
+Read: List available schemas (``/api/v1/schemas``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Retrieves schema configurations
+- Shows schema metadata and structure
+
+
+Delete: Remove schema definition (``/api/v1/schemas``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Deletes schema across all nodes
+- Preserves data integrity
+
+
+Data Operations
+----------------
+
+Write: Upload data to the specified schema collection (``/api/v1/data/create``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Writes data to multiple nodes
+- Encrypts specified fields with ``$allot`` markers before distribution
+- Distributes encrypted shares marked ``$share`` across nodes
+
+
+Read: Retrieve data from the specified schema collection that matches the provided filter (``/api/v1/data/read``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Retrieves data from all nodes
+- Recombines encrypted shares marked ``$share`` from nodes to decrypt specified fields automatically
+- Returns decrypted record
+
+
+Update: Update data on the specified schema collection that matches the provided filter (``/api/v1/data/read``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Encrypts specified fields with ``$allot`` markers before distribution
+- Distributes encrypted shares marked ``$share`` across nodes, updating existing records matching the provided filter
+
+Delete: Retrieve data from the specified schema collection that matches the provided filter (``/api/v1/data/read``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Deletes existing records on all nodes that are matching the provided filter
+
+
+Flush: Remove all documents in a schema collection (``/api/v1/data/flush``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Removes all data across nodes from a schema collection
+
+
+List the organization's schemas (``/api/v1/schemas``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Lists all schemas associated with the organization
+
+
 Installation and Usage
 ----------------------
 The library can be imported in the usual ways:
@@ -36,13 +127,30 @@ The library can be imported in the usual ways:
     import nilsvwrappers
     from nilsvwrappers import *
 
-Example
+Standalone NilQLWrapper Example
 ^^^^^^^^
 An example workflow that demonstrates use of the wrapper is presented below:
 
-.. code-block:: python
+Run examples
 
-    import nilsvwrappers
+.. code-block:: bash
+
+    python -m pip examples/nilql_encryption.py
+
+SecretVaultWrapper Example
+^^^^^^^^
+
+Copy the .env.example to create a .env file that uses the example org
+
+.. code-block:: bash
+
+    cp examples/.env.example examples/.env
+
+Run example to encrypt and upload data to all nodes, then read data from nodes.
+
+.. code-block:: bash
+
+    python -m pip examples/data_create_read.py
 
 Development
 -----------

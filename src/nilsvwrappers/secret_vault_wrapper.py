@@ -11,7 +11,7 @@ from ecdsa import SigningKey, SECP256k1
 
 from .nilql_wrapper import NilQLWrapper, OperationType
 
-# pylint: disable=dangerous-default-value,too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 class SecretVaultWrapper:
     """
     SecretVaultWrapper manages distributed data storage across multiple nodes.
@@ -398,7 +398,7 @@ class SecretVaultWrapper:
 
         return results
 
-    async def read_from_nodes(self, data_filter: Dict[str, Any] = {}) -> List[Dict[str, Any]]:
+    async def read_from_nodes(self, data_filter: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """
         Reads data from all nodes and then recombines the shares to form the original records.
 
@@ -418,7 +418,7 @@ class SecretVaultWrapper:
                 jwt_token = await self.generate_node_token(node["did"])
                 payload = {
                     "schema": self.schema_id,
-                    "filter": data_filter,
+                    "filter": data_filter if data_filter else {},
                 }
                 result = await self.make_request(
                     node["url"],
@@ -458,7 +458,7 @@ class SecretVaultWrapper:
         return recombined_records
 
     async def update_data_to_nodes(
-        self, record_update: Dict[str, Any], data_filter: Dict[str, Any] = {}
+        self, record_update: Dict[str, Any], data_filter: Dict[str, Any] = None
     ) -> List[Dict[str, Any]]:
         """
         Update data on all nodes, while also optionally encrypting them and applying a filter.
@@ -493,7 +493,7 @@ class SecretVaultWrapper:
                 payload = {
                     "schema": self.schema_id,
                     "update": {"$set": node_data},
-                    "filter": data_filter,
+                    "filter": data_filter if data_filter else {},
                 }
 
                 # Make the request to the node's update endpoint
@@ -515,7 +515,7 @@ class SecretVaultWrapper:
 
         return results
 
-    async def delete_data_from_nodes(self, data_filter: Dict[str, Any] = {}) -> List[Dict[str, Any]]:
+    async def delete_data_from_nodes(self, data_filter: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """
         Deletes data from all nodes based on the provided filter.
 
@@ -540,7 +540,7 @@ class SecretVaultWrapper:
                 # Prepare the payload for the delete request
                 payload = {
                     "schema": self.schema_id,
-                    "filter": data_filter,
+                    "filter": data_filter if data_filter else {},
                 }
                 # Make the request to the node's delete endpoint
                 result = await self.make_request(
