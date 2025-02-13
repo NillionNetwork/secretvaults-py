@@ -9,7 +9,7 @@ from org_config import org_config
 # Update schema ID with your own value
 SCHEMA_ID = "167cabf7-2003-4445-9531-9bd3f152042c"
 
-# Load the schema from schema.json
+# Load the query from query.json
 with open("query.json", "r", encoding="utf8") as query_file:
     query = json.load(query_file)
 

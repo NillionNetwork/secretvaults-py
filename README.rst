@@ -157,7 +157,7 @@ To run the examples below, first install the package:
 
 .. code-block:: bash
 
-    python -m pip install nilsvwrappers
+    python -m pip install .
 
 Standalone NilQLWrapper Example
 -------------------------------
@@ -168,7 +168,7 @@ Run examples:
 
 .. code-block:: bash
 
-    python -m examples.nilql_encryption
+    python3 examples/nilql_encryption.py
 
 SecretVaultWrapper Example
 ---------------------------
@@ -183,7 +183,7 @@ Run example to encrypt and upload data to all nodes, then read data from nodes:
 
 .. code-block:: bash
 
-    python -m examples.data_create_read
+    python3 examples/data_create_read.py
 
 Development
 -----------
