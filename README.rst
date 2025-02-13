@@ -231,7 +231,7 @@ Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
 Contributions
 -------------
 
-To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/secret_vault_wrapper-py>`__ for this library.
+To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/nillion-sv-wrappers-py>`__ for this library.
 
 Versioning
 ----------
@@ -241,6 +241,6 @@ The version number format for this library and the changes to the library associ
 Publishing
 ----------
 
-This library can be published as a `package on PyPI <https://pypi.org/project/secret_vault_wrapper>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
+This library can be published as a `package on PyPI <https://pypi.org/project/nilsvwrappers>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
 
 Ensure that any links in this README document to the Read the Docs documentation of this package (or its dependencies) have appropriate version numbers. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions.
