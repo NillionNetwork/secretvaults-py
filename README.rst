@@ -61,14 +61,14 @@ Create: Deploy schema across nodes (``/api/v1/schemas``)
 
 
 Read: List available schemas (``/api/v1/schemas``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Retrieves schema configurations
 - Shows schema metadata and structure
 
 
 Delete: Remove schema definition (``/api/v1/schemas``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Deletes schema across all nodes
 
@@ -77,7 +77,7 @@ Data Operations
 ----------------
 
 Create: Upload data to the specified schema collection (``/api/v1/data/create``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Writes data to multiple nodes
 - Encrypts specified fields with ``$allot`` markers before distribution
@@ -85,7 +85,7 @@ Create: Upload data to the specified schema collection (``/api/v1/data/create``)
 
 
 Read: Retrieve data from the specified schema collection (``/api/v1/data/read``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Retrieves data from all nodes
 - Recombines encrypted shares marked ``$share`` from nodes to decrypt specified fields automatically
@@ -93,20 +93,20 @@ Read: Retrieve data from the specified schema collection (``/api/v1/data/read``)
 
 
 Update: Update data in the specified schema collection (``/api/v1/data/update``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Encrypts specified fields with ``$allot`` markers before distribution
 - Distributes encrypted shares marked ``$share`` across nodes, updating existing records matching the provided filter
 
 
 Delete: Delete data from the specified schema collection (``/api/v1/data/delete``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Deletes existing records on all nodes that match the provided filter
 
 
 Flush: Remove all documents in a schema collection (``/api/v1/data/flush``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Removes all data across nodes from a schema collection
 
@@ -123,7 +123,7 @@ Create: Deploy query across nodes (``/api/v1/queries``)
 
 
 Execute: Runs the query across nodes (``/api/v1/queries/execute``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Executes the query on all nodes with the provided variables
 - Recombines encrypted shares or aggregation results marked ``$share`` from nodes to decrypt specified fields automatically
@@ -131,14 +131,14 @@ Execute: Runs the query across nodes (``/api/v1/queries/execute``)
 
 
 Read: List available queries (``/api/v1/queries``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Retrieves available queries
 - Shows query definition and structure
 
 
 Delete: Remove query across nodes (``/api/v1/queries``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Deletes query across all nodes
 
