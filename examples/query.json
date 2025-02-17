@@ -1,26 +1,11 @@
 {
-    "variables": {
-        "question_number": {
-            "type": "number",
-            "description": "The target question"
-        }
-    },
+    "variables": {},
     "pipeline":
         [
             {
                 "$project": {
-                    "yearsFields": { "$objectToArray": "$years_in_web3" },
-                    "filteredResponses": {
-                        "$filter": {
-                            "input": "$responses",
-                            "as": "response",
-                            "cond": { "$eq": ["$$response.question_number", "##question_number"] }
-                        }
-                    }
+                    "yearsFields": { "$objectToArray": "$years_in_web3" }
                 }
-            },
-            {
-                "$match": { "filteredResponses": { "$ne": [] } }
             },
             {
                 "$unwind": "$yearsFields"
