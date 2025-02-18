@@ -1,6 +1,6 @@
 [project]
 name = "secretvaults"
-version = "0.0.0a0"
+version = "0.0.0a1"
 description = "Wrappers for Nillion's Secret Vault and nilQL"
 license = {text = "MIT"}
 readme = "README.rst"
