@@ -7,26 +7,26 @@ from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "167cabf7-2003-4445-9531-9bd3f152042c"
+SCHEMA_ID = "e6423915-9aa0-48ad-9bd3-5857cdbb4055"
 
-# $allot signals that the value will be encrypted to one $share per node before writing to the collection
+# %allot signals that the value will be encrypted to one %share per node before writing to the collection
 web3_experience_survey_data = [
     {
-        "years_in_web3": {"$allot": 4},
+        "years_in_web3": {"%allot": 4},
         "responses": [
             {"rating": 5, "question_number": 1},
             {"rating": 3, "question_number": 2},
         ],
     },
     {
-        "years_in_web3": {"$allot": 1},
+        "years_in_web3": {"%allot": 1},
         "responses": [
             {"rating": 5, "question_number": 1},
             {"rating": 3, "question_number": 2},
         ],
     },
     {
-        "years_in_web3": {"$allot": 5},
+        "years_in_web3": {"%allot": 5},
         "responses": [
             {"rating": 2, "question_number": 1},
             {"rating": 4, "question_number": 5},

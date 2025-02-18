@@ -1,19 +1,20 @@
 """Data Update example using the SecretVault wrapper"""
+
 import asyncio
 import json
 import sys
 
-from secretvaults import SecretVaultWrapper
+from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 
 # Update schema ID and record ID to update with your own values
-SCHEMA_ID = "167cabf7-2003-4445-9531-9bd3f152042c"
-RECORD_ID = "0f27cd38-4696-434c-a4d2-1a3823efe864"
+SCHEMA_ID = "e6423915-9aa0-48ad-9bd3-5857cdbb4055"
+RECORD_ID = "43047ed5-0f8a-43b6-bd13-f2ce6d4058f1"
 
-# Record update with $allot fields
+# Record update with %allot fields
 record_update = {
-    "years_in_web3": {"$allot": 15},
+    "years_in_web3": {"%allot": 15},
     "responses": [
         {"rating": 5, "question_number": 1},
         {"rating": 5, "question_number": 2},
@@ -27,7 +28,12 @@ async def main():
     """
     try:
         # Initialize the SecretVaultWrapper instance
-        collection = SecretVaultWrapper(org_config["nodes"], org_config["org_credentials"], SCHEMA_ID)
+        collection = SecretVaultWrapper(
+            org_config["nodes"],
+            org_config["org_credentials"],
+            SCHEMA_ID,
+            operation=OperationType.SUM.value,  # for calculating SUM of years_in_web3 with a query, default is STORE)
+        )
         await collection.init()
 
         # Filter to find the record by ID

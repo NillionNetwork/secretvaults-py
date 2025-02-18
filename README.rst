@@ -31,8 +31,8 @@ NilQLWrapper: Lightweight wrapper for encryption and decryption using nilQL
 ============================================================================
 
 - Encrypts data into shares for distributed storage across nodes
-- Handles structured data with ``$allot`` markers for selective encryption
-- Recombines shares and decrypts data marked ``$share`` using unify
+- Handles structured data with ``%allot`` markers for selective encryption
+- Recombines shares and decrypts data marked ``%share`` using unify
 - Manages secret keys for encryption/decryption operations
 - Recombines and decrypts shares to recover original data
 - Maintains compatibility with SecretVault timestamps
@@ -80,23 +80,23 @@ Create: Upload data to the specified schema collection (``/api/v1/data/create``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Writes data to multiple nodes
-- Encrypts specified fields with ``$allot`` markers before distribution
-- Distributes encrypted shares marked ``$share`` across nodes
+- Encrypts specified fields with ``%allot`` markers before distribution
+- Distributes encrypted shares marked ``%share`` across nodes
 
 
 Read: Retrieve data from the specified schema collection (``/api/v1/data/read``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Retrieves data from all nodes
-- Recombines encrypted shares marked ``$share`` from nodes to decrypt specified fields automatically
+- Recombines encrypted shares marked ``%share`` from nodes to decrypt specified fields automatically
 - Returns decrypted record
 
 
 Update: Update data in the specified schema collection (``/api/v1/data/update``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Encrypts specified fields with ``$allot`` markers before distribution
-- Distributes encrypted shares marked ``$share`` across nodes, updating existing records matching the provided filter
+- Encrypts specified fields with ``%allot`` markers before distribution
+- Distributes encrypted shares marked ``%share`` across nodes, updating existing records matching the provided filter
 
 
 Delete: Delete data from the specified schema collection (``/api/v1/data/delete``)
@@ -126,7 +126,7 @@ Execute: Runs the query across nodes (``/api/v1/queries/execute``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Executes the query on all nodes with the provided variables
-- Recombines encrypted shares or aggregation results marked ``$share`` from nodes to decrypt specified fields automatically
+- Recombines encrypted shares or aggregation results marked ``%share`` from nodes to decrypt specified fields automatically
 - Returns decrypted record
 
 

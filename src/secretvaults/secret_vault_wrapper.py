@@ -716,17 +716,6 @@ class SecretVaultWrapper:
             if "data" in node_result:
                 all_shares.extend(node_result["data"])
 
-        # TEMP START: Recursive function to replace '%share' with '$share' in all structures
-        def replace_share_keys(data):
-            if isinstance(data, dict):
-                return {("$share" if k == "%share" else k): replace_share_keys(v) for k, v in data.items()}
-            if isinstance(data, list):
-                return [replace_share_keys(item) for item in data]
-            return data
-
-        all_shares = replace_share_keys(all_shares)
-        # TEMP END
-
         # Unify the results directly
         recombined_result = await self.nilql_wrapper.unify(all_shares)
 

@@ -109,7 +109,7 @@ class NilQLWrapper:
         self, data: Union[int, bool, str, list, dict]
     ) -> Sequence[Union[int, bool, str, list, dict]]:
         """
-        Recursively encrypts all values marked with $allot in the given data object
+        Recursively encrypts all values marked with %allot in the given data object
         and prepares it for secure processing, returning the encrypted data in allotted shares.
 
         Args:
@@ -118,7 +118,7 @@ class NilQLWrapper:
         Returns:
             Sequence[Union[int, bool, str, list, dict]]: A sequence of the encrypted data. The structure of the returned
                                                         data mirrors the
-                                                        original input, but with the "$allot" values
+                                                        original input, but with the "%allot" values
                                                         replaced with their encrypted counterparts.
 
         Raises:
@@ -128,7 +128,7 @@ class NilQLWrapper:
         Example:
             data = {
                 "user_info": {
-                    "$allot": "sensitive_data",
+                    "%allot": "sensitive_data",
                     "other_info": "non_sensitive_data"
                 }
             }
@@ -146,9 +146,9 @@ class NilQLWrapper:
             if isinstance(obj, dict):
                 for key, value in obj.items():
                     if isinstance(value, dict):
-                        if "$allot" in value:
-                            encrypted_value = await self.encrypt(value["$allot"])
-                            encrypted[key] = {"$allot": encrypted_value}
+                        if "%allot" in value:
+                            encrypted_value = await self.encrypt(value["%allot"])
+                            encrypted[key] = {"%allot": encrypted_value}
                         else:
                             encrypted[key] = await encrypt_deep(value)
                     else:
