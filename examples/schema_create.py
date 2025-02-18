@@ -1,4 +1,5 @@
 """Schema Create example using the SecretVault wrapper"""
+
 import asyncio
 import json
 import sys
@@ -22,7 +23,10 @@ async def main():
 
         # Create a new schema
         new_schema = await org.create_schema(schema, "Web3 Experience Survey")
-        print("📚 New Schema:", json.dumps(new_schema, indent=2))
+        print("📚 New Schema:", new_schema)
+
+        # Optional: Delete the schema
+        # await org.delete_schema(new_schema)
 
     except RuntimeError as error:
         print(f"❌ Failed to use SecretVaultWrapper: {str(error)}")

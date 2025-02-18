@@ -1,4 +1,5 @@
 """SecretVaultWrapper manages distributed data storage across multiple nodes"""
+
 import asyncio
 import uuid
 import time
@@ -10,6 +11,7 @@ import jwt
 from ecdsa import SigningKey, SECP256k1
 
 from .nilql_wrapper import NilQLWrapper, OperationType
+
 
 # pylint: disable=too-many-instance-attributes
 class SecretVaultWrapper:
@@ -154,6 +156,7 @@ class SecretVaultWrapper:
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
+            "Accept": "application/json",
         }
 
         async with aiohttp.ClientSession() as session:
@@ -165,9 +168,12 @@ class SecretVaultWrapper:
                     json=payload if method != HTTPMethod.GET else None,
                     params=payload if method == HTTPMethod.GET else None,
                 ) as response:
-                    if response.status != 200:
+                    if response.status >= 300:
                         raise ConnectionError(f"Error: {response.status}, body: {await response.text()}")
-                    return await response.json()
+                    # Check if response contains a body
+                    if response.content_type and "application/json" in response.content_type.lower():
+                        return await response.json()
+                    return {}
 
             except aiohttp.ClientConnectionError as e:
                 raise ConnectionError(f"Connection error: {str(e)}") from e
@@ -253,9 +259,7 @@ class SecretVaultWrapper:
 
         return result
 
-    async def create_schema(
-        self, schema: Dict[str, Any], schema_name: str, schema_id: str = None
-    ) -> List[Dict[str, Any]]:
+    async def create_schema(self, schema: Dict[str, Any], schema_name: str, schema_id: str = None) -> str:
         """
         Creates a new schema on all nodes in the cluster concurrently.
 
@@ -265,7 +269,7 @@ class SecretVaultWrapper:
             schema_id (str, optional): A custom schema ID. If not provided, a new UUID is generated.
 
         Returns:
-            List[Dict[str, Any]]: The response from the nodes.
+            str: The schema id..
 
         Raises:
             Exception: If there is an issue generating the JWT token or making the request.
@@ -285,31 +289,27 @@ class SecretVaultWrapper:
         }
 
         # Define an async function to handle the request for a single node
-        async def create_schema_for_node(node: Dict[str, str]) -> Dict[str, Any]:
+        async def create_schema_for_node(node: Dict[str, str]) -> None:
             jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
-            result = await self.make_request(
+            await self.make_request(
                 node["url"],  # Node URL
                 "schemas",  # Endpoint for schema creation
                 jwt_token,  # JWT token for authentication
                 schema_payload,  # The schema creation payload
             )
-            return {"node": node["url"], "result": result}
 
         # Gather tasks for all nodes and execute them in parallel
         tasks = [create_schema_for_node(node) for node in self.nodes]
-        results = await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
-        return results
+        return schema_id
 
-    async def delete_schema(self, schema_id: str) -> List[Dict[str, Any]]:
+    async def delete_schema(self, schema_id: str) -> None:
         """
         Removes a schema from all nodes in the cluster concurrently.
 
         Args:
             schema_id (str): The ID of the schema to be deleted from all nodes.
-
-        Returns:
-            List[Dict[str, Any]]: The response from the nodes.
 
         Raises:
             Exception: If there is an issue generating the JWT token or making the request.
@@ -319,22 +319,19 @@ class SecretVaultWrapper:
         """
 
         # Define an async function to handle the request for a single node
-        async def delete_schema_from_node(node: Dict[str, str]) -> Dict[str, Any]:
+        async def delete_schema_from_node(node: Dict[str, str]) -> None:
             jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
-            result = await self.make_request(
+            await self.make_request(
                 node["url"],  # Node URL
                 "schemas",  # Endpoint for schema deletion
                 jwt_token,  # JWT token for authentication
                 {"id": schema_id},  # Schema ID to delete
                 method=HTTPMethod.DELETE,  # HTTP method for deletion
             )
-            return {"node": node["url"], "result": result}
 
         # Gather tasks for all nodes and execute them in parallel
         tasks = [delete_schema_from_node(node) for node in self.nodes]
-        results = await asyncio.gather(*tasks)
-
-        return results
+        await asyncio.gather(*tasks)
 
     async def write_to_nodes(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -412,6 +409,7 @@ class SecretVaultWrapper:
         Example:
             records = await wrapper.read_from_nodes({"_id": "XXXXXXXXXXXXXXXXXXX"})
         """
+
         # Function to read from each node
         async def read_from_node(node: Dict[str, str]) -> Dict[str, Any]:
             try:
@@ -590,9 +588,7 @@ class SecretVaultWrapper:
 
         return result
 
-    async def create_query(
-        self, query: Dict[str, Any], schema_id: str, query_name: str, query_id: str = None
-    ) -> List[Dict[str, Any]]:
+    async def create_query(self, query: Dict[str, Any], schema_id: str, query_name: str, query_id: str = None) -> str:
         """
         Creates a new query on all nodes in the cluster concurrently.
 
@@ -603,7 +599,7 @@ class SecretVaultWrapper:
             query_id (str, optional): A custom query ID. If not provided, a new UUID is generated.
 
         Returns:
-            List[Dict[str, Any]]: The response from the nodes.
+            str: The created schema id.
 
         Raises:
             Exception: If there is an issue generating the JWT token or making the request.
@@ -624,34 +620,27 @@ class SecretVaultWrapper:
         }
 
         # Define an async function to handle the request for a single node
-        async def create_query_for_node(node: Dict[str, str]) -> Dict[str, Any]:
+        async def create_query_for_node(node: Dict[str, str]) -> None:
             jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
-            result = await self.make_request(
+            await self.make_request(
                 node["url"],
                 "queries",
                 jwt_token,
                 query_payload,
             )
-            return {
-                "node": node["url"],
-                "result": result,
-            }
 
         # Gather tasks for all nodes and execute them in parallel
         tasks = [create_query_for_node(node) for node in self.nodes]
-        results = await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
-        return results
+        return query_id
 
-    async def delete_query(self, query_id: str) -> List[Dict[str, Any]]:
+    async def delete_query(self, query_id: str) -> None:
         """
         Removes a query from all nodes in the cluster concurrently.
 
         Args:
             query_id (str): The ID of the query to be deleted from all nodes.
-
-        Returns:
-            List[Dict[str, Any]]: The response from the nodes.
 
         Raises:
             Exception: If there is an issue generating the JWT token or making the request.
@@ -661,22 +650,19 @@ class SecretVaultWrapper:
         """
 
         # Define an async function to handle the request for a single node
-        async def delete_query_from_node(node: Dict[str, str]) -> Dict[str, Any]:
+        async def delete_query_from_node(node: Dict[str, str]) -> None:
             jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
-            result = await self.make_request(
+            await self.make_request(
                 node["url"],
                 "queries",
                 jwt_token,
                 {"id": query_id},
                 method=HTTPMethod.DELETE,
             )
-            return {"node": node["url"], "result": result}
 
         # Gather tasks for all nodes and execute them in parallel
         tasks = [delete_query_from_node(node) for node in self.nodes]
-        results = await asyncio.gather(*tasks)
-
-        return results
+        await asyncio.gather(*tasks)
 
     async def query_execute_on_nodes(self, query_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         """

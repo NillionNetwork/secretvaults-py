@@ -8,7 +8,7 @@ from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "415f73e5-3cc3-452e-8c93-cac1fdb4a54a"
+SCHEMA_ID = "8469173e-1565-40e5-9b64-54a373724b97"
 
 # %allot signals that the value will be encrypted to one %share per node before writing to the collection
 web3_experience_survey_data = [

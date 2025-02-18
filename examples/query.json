@@ -7,47 +7,31 @@
     },
     "pipeline":
         [
-            {
-                "$project": {
-                    "yearsFields": { "$objectToArray": "$years_in_web3" },
-                    "filteredResponses": {
-                        "$filter": {
-                            "input": "$responses",
-                            "as": "response",
-                            "cond": { "$eq": ["$$response.question_number", "##question_number"] }
-                        }
-                    }
-                }
-            },
-            {
-                "$match": { "filteredResponses": { "$ne": [] } }
-            },
-            {
-                "$unwind": "$yearsFields"
-            },
-            {
-                "$match": { "yearsFields.k": "%share" }
-            },
-            {
-                "$group": {
-                    "_id": null,
-                    "total_years": { "$sum": "$yearsFields.v" },
-                    "count": { "$sum": 1 }
-                }
-            },
-            {
-                "$project": {
-                    "_id": 0,
-                    "sum_years_in_web3": {
-                        "%share": {
-                            "$mod": [
-                                "$total_years",
-                                { "$add": [{ "$pow": [2, 32] }, 15] }
-                            ]
-                        }
-                    },
-                    "user_count": "$count"
-                }
+          {
+            "$match": {
+              "responses.question_number": "##question_number"
             }
+          },
+          {
+            "$group": {
+              "_id": null,
+              "total_years": { "$sum": "$years_in_web3.%share" },
+              "count": { "$sum": 1 }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "sum_years_in_web3": {
+                "%share": {
+                  "$mod": [
+                    "$total_years",
+                    { "$add": [{ "$pow": [2, 32] }, 15] }
+                  ]
+                }
+              },
+              "user_count": "$count"
+            }
+          }
         ]
     }

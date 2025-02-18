@@ -9,8 +9,8 @@ from org_config import org_config
 
 
 # Update schema ID and record ID to update with your own values
-SCHEMA_ID = "415f73e5-3cc3-452e-8c93-cac1fdb4a54a"
-RECORD_ID = "578d712b-876d-4291-a131-aee3e2b8fdde"
+SCHEMA_ID = "8469173e-1565-40e5-9b64-54a373724b97"
+RECORD_ID = "be3d4ef5-aba7-4d4c-baa3-cc18dd4e90cc"
 
 # Record update with %allot fields
 record_update = {
