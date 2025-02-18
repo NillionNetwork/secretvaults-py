@@ -9,8 +9,8 @@ from org_config import org_config
 
 
 # Update schema ID and record ID to delete with your own values
-SCHEMA_ID = "e6423915-9aa0-48ad-9bd3-5857cdbb4055"
-RECORD_ID = "43047ed5-0f8a-43b6-bd13-f2ce6d4058f1"
+SCHEMA_ID = "415f73e5-3cc3-452e-8c93-cac1fdb4a54a"
+RECORD_ID = "578d712b-876d-4291-a131-aee3e2b8fdde"
 
 
 async def main():

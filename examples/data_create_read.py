@@ -1,4 +1,5 @@
 """Data Create and Read example using the SecretVault wrapper"""
+
 import asyncio
 import json
 import sys
@@ -7,7 +8,7 @@ from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "e6423915-9aa0-48ad-9bd3-5857cdbb4055"
+SCHEMA_ID = "415f73e5-3cc3-452e-8c93-cac1fdb4a54a"
 
 # %allot signals that the value will be encrypted to one %share per node before writing to the collection
 web3_experience_survey_data = [

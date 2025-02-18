@@ -8,7 +8,7 @@ from secretvaults import SecretVaultWrapper
 from org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "e6423915-9aa0-48ad-9bd3-5857cdbb4055"
+SCHEMA_ID = "415f73e5-3cc3-452e-8c93-cac1fdb4a54a"
 
 # Load the query from query.json
 with open("query.json", "r", encoding="utf8") as query_file:

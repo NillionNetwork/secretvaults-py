@@ -8,7 +8,7 @@ from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update QUERY ID with your own value
-QUERY_ID = "3127dc8c-9f8a-42c0-8236-ea0a929d0414"
+QUERY_ID = "de272606-6f10-4a39-b616-b17411ce9927"
 
 # Define payload variables. In this example we are targeting users who have answered question number X.
 variables = {
