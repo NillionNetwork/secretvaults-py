@@ -14,11 +14,11 @@ async def main():
 
     # Example data to encrypt
     data = {
-        "name": {"$allot": "Steph"},
-        "years_in_web3": {"$allot": 5},
+        "name": {"%allot": "Steph"},
+        "years_in_web3": {"%allot": 5},
         "test_nested": {
             "test_nested_2": {
-                "test_nested_3": {"$allot": "nested 3 levels down"},
+                "test_nested_3": {"%allot": "nested 3 levels down"},
                 "test_nested_4": None,
             },
         },

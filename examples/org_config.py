@@ -1,4 +1,5 @@
 """The SecretVault organization configuration"""
+
 import os
 from dotenv import load_dotenv
 
@@ -12,16 +13,16 @@ org_config = {
     },
     "nodes": [
         {
-            "url": "https://nildb-zy8u.nillion.network",
-            "did": "did:nil:testnet:nillion1fnhettvcrsfu8zkd5zms4d820l0ct226c3zy8u",
+            "url": "https://nildb-nx8v.nillion.network",
+            "did": "did:nil:testnet:nillion1qfrl8nje3nvwh6cryj63mz2y6gsdptvn07nx8v",
         },
         {
-            "url": "https://nildb-rl5g.nillion.network",
-            "did": "did:nil:testnet:nillion14x47xx85de0rg9dqunsdxg8jh82nvkax3jrl5g",
+            "url": "https://nildb-p3mx.nillion.network",
+            "did": "did:nil:testnet:nillion1uak7fgsp69kzfhdd6lfqv69fnzh3lprg2mp3mx",
         },
         {
-            "url": "https://nildb-lpjp.nillion.network",
-            "did": "did:nil:testnet:nillion167pglv9k7m4gj05rwj520a46tulkff332vlpjp",
+            "url": "https://nildb-rugk.nillion.network",
+            "did": "did:nil:testnet:nillion1kfremrp2mryxrynx66etjl8s7wazxc3rssrugk",
         },
     ],
 }

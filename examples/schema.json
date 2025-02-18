@@ -13,11 +13,11 @@
       "years_in_web3": {
         "type": "object",
         "properties": {
-          "$share": {
+          "%share": {
             "type": "integer"
           }
         },
-        "required": ["$share"]
+        "required": ["%share"]
       },
       "responses": {
         "type": "array",

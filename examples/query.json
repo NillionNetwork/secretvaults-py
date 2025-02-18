@@ -26,7 +26,7 @@
                 "$unwind": "$yearsFields"
             },
             {
-                "$match": { "yearsFields.k": "$share" }
+                "$match": { "yearsFields.k": "%share" }
             },
             {
                 "$group": {

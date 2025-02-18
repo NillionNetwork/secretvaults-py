@@ -1,4 +1,5 @@
 """Schema Create example using the SecretVault wrapper"""
+
 import asyncio
 import json
 import sys
@@ -7,7 +8,7 @@ from secretvaults import SecretVaultWrapper
 from org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "167cabf7-2003-4445-9531-9bd3f152042c"
+SCHEMA_ID = "415f73e5-3cc3-452e-8c93-cac1fdb4a54a"
 
 # Load the query from query.json
 with open("query.json", "r", encoding="utf8") as query_file:

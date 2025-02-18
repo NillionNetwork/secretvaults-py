@@ -1,4 +1,5 @@
 """Query Execute example using the SecretVault wrapper"""
+
 import asyncio
 import json
 import sys
@@ -7,7 +8,7 @@ from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update QUERY ID with your own value
-QUERY_ID = "738906f8-1cb9-4c30-bb9d-54b977a0bc16"
+QUERY_ID = "de272606-6f10-4a39-b616-b17411ce9927"
 
 # Define payload variables. In this example we are targeting users who have answered question number X.
 variables = {
