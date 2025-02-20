@@ -216,13 +216,7 @@ All unit tests are executed and their coverage is measured when using `pytest <h
 .. code-block:: bash
 
     python -m pip install ".[test]"
-    python -m pytest
-
-The subset of the unit tests included in the module itself and can be executed using `doctest <https://docs.python.org/3/library/doctest.html>`__:
-
-.. code-block:: bash
-
-    python src/secretvaults/secret_vault_wrapper.py -v
+    python -m pytest test
 
 Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
 
