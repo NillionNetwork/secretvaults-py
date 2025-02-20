@@ -2,38 +2,38 @@
 
 import asyncio
 import json
+import random
 import sys
 
 from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "8469173e-1565-40e5-9b64-54a373724b97"
+SCHEMA_ID = "51dba4eb-b5e7-4c54-9059-867ff592d1ae"
+
 
 # %allot signals that the value will be encrypted to one %share per node before writing to the collection
-web3_experience_survey_data = [
-    {
-        "years_in_web3": {"%allot": 4},
-        "responses": [
-            {"rating": 5, "question_number": 1},
-            {"rating": 3, "question_number": 2},
-        ],
-    },
-    {
-        "years_in_web3": {"%allot": 1},
-        "responses": [
-            {"rating": 5, "question_number": 1},
-            {"rating": 3, "question_number": 2},
-        ],
-    },
-    {
-        "years_in_web3": {"%allot": 5},
-        "responses": [
-            {"rating": 2, "question_number": 1},
-            {"rating": 4, "question_number": 5},
-        ],
-    },
-]
+def generate_web3_experience_survey_data(num_entries=10):
+    data = []
+
+    for _ in range(num_entries):
+        entry = {
+            "years_in_web3": {"%allot": random.randint(1, 10)},
+            "responses": [
+                {
+                    "rating": random.randint(1, 5),
+                    "question_number": random.randint(1, 10),
+                }
+                for _ in range(random.randint(3, 10))
+            ],
+        }
+        data.append(entry)
+
+    return data
+
+
+# Generate some entries
+web3_experience_survey_data = generate_web3_experience_survey_data(10)
 
 
 async def main():
@@ -46,7 +46,7 @@ async def main():
             org_config["nodes"],
             org_config["org_credentials"],
             SCHEMA_ID,
-            operation=OperationType.SUM.value,  # for calculating SUM of years_in_web3 with a query, default is STORE
+            operation=OperationType.STORE.value,
         )
         await collection.init()
 
