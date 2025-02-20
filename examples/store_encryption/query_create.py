@@ -28,7 +28,7 @@ async def main():
         new_query = await org.create_query(
             query,
             SCHEMA_ID,
-            "Returns sum of years_in_web3 and count of users that have answered question X",
+            "Returns the years in web3 of the users that gave the top 3 ratings",
         )
         print("📚 New Query:", new_query)
 
