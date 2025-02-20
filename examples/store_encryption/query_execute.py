@@ -35,7 +35,6 @@ async def main():
 
         # Execute the query
         query_result = await org.query_execute_on_nodes(query_payload)
-        # Even though years_in_web3 entries are encrypted, we can get the sum without individually decrypting them
         print("📚 Query Result:", json.dumps(query_result, indent=2))
 
     except RuntimeError as error:
