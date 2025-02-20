@@ -10,7 +10,7 @@ import aiohttp
 import jwt
 from ecdsa import SigningKey, SECP256k1
 
-from .nilql_wrapper import NilQLWrapper, OperationType
+from .nilql_wrapper import NilQLWrapper, OperationType, KeyType
 
 
 # pylint: disable=too-many-instance-attributes
@@ -27,6 +27,9 @@ class SecretVaultWrapper:
         schema_id (Optional[str]): An optional identifier for the schema being used.
         operation (str): The operation type for the data to be encrypted (default is "store").
         token_expiry_seconds (int): Expiration time for the authentication token, in seconds.
+        encryption_key_type (KeyType): The encryption key type.
+        encryption_secret_key (Optional[str]): An encryption secret key.
+        encryption_secret_key_seed (Optional[str]): An encryption secret key seed.
     """
 
     def __init__(
@@ -36,6 +39,7 @@ class SecretVaultWrapper:
         schema_id: str = None,
         operation: str = OperationType.STORE.value,
         token_expiry_seconds: int = 60,
+        encryption_key_type: KeyType = KeyType.CLUSTER,
         encryption_secret_key: Optional[str] = None,
         encryption_secret_key_seed: Optional[str] = None,
     ):
@@ -47,6 +51,7 @@ class SecretVaultWrapper:
         self.token_expiry_seconds = token_expiry_seconds
         self.nilql_wrapper = None
         self.signer = None
+        self.encryption_key_type = encryption_key_type
         self.encryption_secret_key = encryption_secret_key
         self.encryption_secret_key_seed = encryption_secret_key_seed
 
@@ -81,6 +86,7 @@ class SecretVaultWrapper:
         self.nilql_wrapper = NilQLWrapper(
             cluster={"nodes": self.nodes},
             operation=self.operation,
+            key_type=self.encryption_key_type,
             secret_key=self.encryption_secret_key,
             secret_key_seed=self.encryption_secret_key_seed,
         )
