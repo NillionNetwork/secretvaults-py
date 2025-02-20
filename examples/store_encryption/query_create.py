@@ -10,7 +10,7 @@ from examples.sum_encryption.org_config import org_config
 # Update schema ID with your own value
 SCHEMA_ID = "51dba4eb-b5e7-4c54-9059-867ff592d1ae"
 
-# Load the query from query_sum_with_vars.json
+# Load the query
 with open("query_store_no_vars.json", "r", encoding="utf8") as query_file:
     query = json.load(query_file)
 
