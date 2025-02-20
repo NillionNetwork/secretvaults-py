@@ -1,4 +1,5 @@
-""" NilQLWrapper provides encryption and decryption of data using Nillion's technology. """
+"""NilQLWrapper provides encryption and decryption of data using Nillion's technology."""
+
 from enum import Enum
 from typing import Optional, Union, Sequence
 
@@ -40,12 +41,18 @@ class NilQLWrapper:
         cluster: dict,
         operation: str = OperationType.STORE.value,
         secret_key: Optional[nilql.SecretKey] = None,
+        secret_key_seed: Optional[str] = None,
         key_type: KeyType = KeyType.CLUSTER,
     ):
         self.cluster = cluster
         self.secret_key = secret_key
+        self.secret_key_seed = secret_key_seed
         self.operation = {operation: True}
         self.key_type = key_type
+
+        # Reforge the SecretKey from seed if provided
+        if self.secret_key_seed and not self.secret_key:
+            self.secret_key = nilql.SecretKey.generate(self.cluster, self.operation, self.secret_key_seed)
 
         # Initialize the appropriate key if not provided
         if self.secret_key is None:

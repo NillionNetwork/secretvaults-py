@@ -5,15 +5,13 @@ import json
 import sys
 
 from secretvaults import SecretVaultWrapper, OperationType
-from org_config import org_config
+from examples.sum_encryption.org_config import org_config
 
 # Update QUERY ID with your own value
-QUERY_ID = "4cb786cb-18fa-4fe2-9e84-621aa8de9dda"
+QUERY_ID = "8bc937fd-aca8-485b-89a9-886e507ce64b"
 
-# Define payload variables. In this example we are targeting users who have answered question number X.
-variables = {
-    "question_number": 1,  # feel free to change this and experiment
-}
+# Define payload variables. In this example we are not using any.
+variables = {}
 
 
 async def main():
@@ -25,7 +23,7 @@ async def main():
         org = SecretVaultWrapper(
             org_config["nodes"],
             org_config["org_credentials"],
-            operation=OperationType.SUM.value,  # we'll be doing a sum operation on encrypted values
+            operation=OperationType.STORE.value,
         )
         await org.init()
 

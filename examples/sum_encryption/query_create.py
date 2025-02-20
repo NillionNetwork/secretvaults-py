@@ -5,11 +5,14 @@ import json
 import sys
 
 from secretvaults import SecretVaultWrapper
-from org_config import org_config
+from examples.sum_encryption.org_config import org_config
 
-# Load the schema from schema.json
-with open("schema.json", "r", encoding="utf8") as schema_file:
-    schema = json.load(schema_file)
+# Update schema ID with your own value
+SCHEMA_ID = "d412699f-6cda-44fe-84f0-b9498315c9ad"
+
+# Load the query from query_sum_with_vars.json
+with open("query_sum_with_vars.json", "r", encoding="utf8") as query_file:
+    query = json.load(query_file)
 
 
 async def main():
@@ -22,11 +25,15 @@ async def main():
         await org.init()
 
         # Create a new schema
-        new_schema = await org.create_schema(schema, "Web3 Experience Survey")
-        print("📚 New Schema:", new_schema)
+        new_query = await org.create_query(
+            query,
+            SCHEMA_ID,
+            "Returns sum of years_in_web3 and count of users that have answered question X",
+        )
+        print("📚 New Query:", new_query)
 
-        # Optional: Delete the schema
-        # await org.delete_schema(new_schema)
+        # Optional: Delete the query
+        # await org.delete_query(new_query)
 
     except RuntimeError as error:
         print(f"❌ Failed to use SecretVaultWrapper: {str(error)}")

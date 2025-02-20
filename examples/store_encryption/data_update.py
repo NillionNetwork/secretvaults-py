@@ -9,8 +9,8 @@ from org_config import org_config
 
 
 # Update schema ID and record ID to update with your own values
-SCHEMA_ID = "8469173e-1565-40e5-9b64-54a373724b97"
-RECORD_ID = "be3d4ef5-aba7-4d4c-baa3-cc18dd4e90cc"
+SCHEMA_ID = "51dba4eb-b5e7-4c54-9059-867ff592d1ae"
+RECORD_ID = "72413ef5-485b-4e3c-875b-637be88cccef"
 
 # Record update with %allot fields
 record_update = {
@@ -32,7 +32,7 @@ async def main():
             org_config["nodes"],
             org_config["org_credentials"],
             SCHEMA_ID,
-            operation=OperationType.SUM.value,  # for calculating SUM of years_in_web3 with a query, default is STORE)
+            operation=OperationType.STORE.value,
         )
         await collection.init()
 

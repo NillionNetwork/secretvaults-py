@@ -5,13 +5,13 @@ import json
 import sys
 
 from secretvaults import SecretVaultWrapper
-from org_config import org_config
+from examples.sum_encryption.org_config import org_config
 
 # Update schema ID with your own value
-SCHEMA_ID = "8469173e-1565-40e5-9b64-54a373724b97"
+SCHEMA_ID = "51dba4eb-b5e7-4c54-9059-867ff592d1ae"
 
-# Load the query from query.json
-with open("query.json", "r", encoding="utf8") as query_file:
+# Load the query from query_sum_with_vars.json
+with open("query_store_no_vars.json", "r", encoding="utf8") as query_file:
     query = json.load(query_file)
 
 

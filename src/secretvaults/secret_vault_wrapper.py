@@ -4,7 +4,7 @@ import asyncio
 import uuid
 import time
 from http import HTTPMethod
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Optional
 
 import aiohttp
 import jwt
@@ -36,6 +36,8 @@ class SecretVaultWrapper:
         schema_id: str = None,
         operation: str = OperationType.STORE.value,
         token_expiry_seconds: int = 60,
+        encryption_secret_key: Optional[str] = None,
+        encryption_secret_key_seed: Optional[str] = None,
     ):
         self.nodes = nodes
         self.nodes_jwt = None
@@ -45,6 +47,8 @@ class SecretVaultWrapper:
         self.token_expiry_seconds = token_expiry_seconds
         self.nilql_wrapper = None
         self.signer = None
+        self.encryption_secret_key = encryption_secret_key
+        self.encryption_secret_key_seed = encryption_secret_key_seed
 
     async def init(self) -> NilQLWrapper:
         """
@@ -74,7 +78,12 @@ class SecretVaultWrapper:
         self.nodes_jwt = node_configs
 
         # Initiate the NilQLWrapper
-        self.nilql_wrapper = NilQLWrapper({"nodes": self.nodes}, self.operation)
+        self.nilql_wrapper = NilQLWrapper(
+            cluster={"nodes": self.nodes},
+            operation=self.operation,
+            secret_key=self.encryption_secret_key,
+            secret_key_seed=self.encryption_secret_key_seed,
+        )
         return self.nilql_wrapper
 
     async def generate_node_token(self, node_did: str) -> str:
@@ -696,13 +705,31 @@ class SecretVaultWrapper:
         tasks = [execute_query_on_node(node) for node in self.nodes]
         results_from_all_nodes = await asyncio.gather(*tasks)
 
-        # Collect all data from nodes
-        all_shares = []
+        # Groups records from different nodes by _id field
+        record_groups = []
         for node_result in results_from_all_nodes:
-            if "data" in node_result:
-                all_shares.extend(node_result["data"])
+            for record in node_result.get("data", []):
+                # Determine the best identifier to group records
+                record_key = "_id"
 
-        # Unify the results directly
-        recombined_result = await self.nilql_wrapper.unify(all_shares)
+                # Find a group that already contains a record with the same record key
+                group = next(
+                    (
+                        g
+                        for g in record_groups
+                        if any(share.get(record_key) == record.get(record_key) for share in g["shares"])
+                    ),
+                    None,
+                )
+                if group:
+                    group["shares"].append(record)
+                else:
+                    record_groups.append({"shares": [record], "record_index": record.get("_id")})
+
+        # Recombine the shares to form the original records
+        recombined_result = []
+        for group in record_groups:
+            recombined = await self.nilql_wrapper.unify(group["shares"])
+            recombined_result.append(recombined)
 
         return recombined_result

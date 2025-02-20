@@ -186,7 +186,7 @@ Run example to encrypt and upload data to all nodes, then read data from nodes:
 
 .. code-block:: bash
 
-    python3 examples/data_create_read.py
+    python3 examples/store_encryption/data_create_read.py
 
 Development
 -----------
