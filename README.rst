@@ -27,6 +27,106 @@ Description and Purpose
 This wrapper provides functions to simplify usage of Nillion's SecretVault and nilQL.
 
 
+Installation and Usage
+-----------------------
+
+You can install the package using pip:
+
+.. code-block:: bash
+
+    pip install secretvaults
+
+
+The library can be imported in the usual ways:
+
+.. code-block:: python
+
+    import secretvaults
+    from secretvaults import *
+
+
+
+Standalone NilQLWrapper Example
+-------------------------------
+
+An example workflow that demonstrates use of the wrapper is presented below:
+
+Run examples:
+
+.. code-block:: bash
+
+    python3 examples/nilql_encryption.py
+
+SecretVaultWrapper Example
+---------------------------
+
+Copy the ``.env.example`` to create a ``.env`` file that uses the example org:
+
+.. code-block:: bash
+
+    cp .env.example .env
+
+Run example to encrypt and upload data to all nodes, then read data from nodes:
+
+.. code-block:: bash
+
+    python3 examples/store_encryption/data_create_read.py
+
+Development
+-----------
+
+All installation and development dependencies are fully specified in ``pyproject.toml``. The ``project.optional-dependencies`` object is used to `specify optional requirements <https://peps.python.org/pep-0621>`__ for various development tasks. This makes it possible to specify additional options (such as ``docs``, ``lint``, and so on) when performing installation using `pip <https://pypi.org/project/pip>`__:
+
+.. code-block:: bash
+
+    python -m pip install ".[docs,lint]"
+
+Documentation
+-------------
+
+The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org>`__:
+
+.. code-block:: bash
+
+    python -m pip install ".[docs]"
+    cd docs
+    sphinx-apidoc -f -E --templatedir=_templates -o _source .. && make html
+
+Testing and Conventions
+------------------------
+
+All unit tests are executed and their coverage is measured when using `pytest <https://docs.pytest.org>`__ (see the ``pyproject.toml`` file for configuration details):
+
+.. code-block:: bash
+
+    python -m pip install ".[test]"
+    python -m pytest test
+
+Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
+
+.. code-block:: bash
+
+    python -m pip install ".[lint]"
+    python -m pylint src/secretvaults
+
+Contributions
+-------------
+
+To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/secretvaults-py>`__ for this library.
+
+Versioning
+----------
+
+The version number format for this library and the changes to the library associated with version number increments conform to `Semantic Versioning 2.0.0 <https://semver.org/#semantic-versioning-200>`__.
+
+Publishing
+----------
+
+This library can be published as a `package on PyPI <https://pypi.org/project/secretvaults>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
+
+Ensure that any links in this README document to the Read the Docs documentation of this package (or its dependencies) have appropriate version numbers. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions.
+
+
 NilQLWrapper: Lightweight wrapper for encryption and decryption using nilQL
 ============================================================================
 
@@ -142,102 +242,3 @@ Delete: Remove query across nodes (``/api/v1/queries``)
 
 - Deletes query across all nodes
 
-
-Installation and Usage
------------------------
-
-You can install the package using pip:
-
-.. code-block:: bash
-
-    pip install secretvaults
-
-
-The library can be imported in the usual ways:
-
-.. code-block:: python
-
-    import secretvaults
-    from secretvaults import *
-
-
-
-Standalone NilQLWrapper Example
--------------------------------
-
-An example workflow that demonstrates use of the wrapper is presented below:
-
-Run examples:
-
-.. code-block:: bash
-
-    python3 examples/nilql_encryption.py
-
-SecretVaultWrapper Example
----------------------------
-
-Copy the ``.env.example`` to create a ``.env`` file that uses the example org:
-
-.. code-block:: bash
-
-    cp .env.example .env
-
-Run example to encrypt and upload data to all nodes, then read data from nodes:
-
-.. code-block:: bash
-
-    python3 examples/store_encryption/data_create_read.py
-
-Development
------------
-
-All installation and development dependencies are fully specified in ``pyproject.toml``. The ``project.optional-dependencies`` object is used to `specify optional requirements <https://peps.python.org/pep-0621>`__ for various development tasks. This makes it possible to specify additional options (such as ``docs``, ``lint``, and so on) when performing installation using `pip <https://pypi.org/project/pip>`__:
-
-.. code-block:: bash
-
-    python -m pip install ".[docs,lint]"
-
-Documentation
--------------
-
-The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org>`__:
-
-.. code-block:: bash
-
-    python -m pip install ".[docs]"
-    cd docs
-    sphinx-apidoc -f -E --templatedir=_templates -o _source .. && make html
-
-Testing and Conventions
-------------------------
-
-All unit tests are executed and their coverage is measured when using `pytest <https://docs.pytest.org>`__ (see the ``pyproject.toml`` file for configuration details):
-
-.. code-block:: bash
-
-    python -m pip install ".[test]"
-    python -m pytest test
-
-Style conventions are enforced using `Pylint <https://pylint.readthedocs.io>`__:
-
-.. code-block:: bash
-
-    python -m pip install ".[lint]"
-    python -m pylint src/secretvaults
-
-Contributions
--------------
-
-To contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nillionnetwork/secretvaults-py>`__ for this library.
-
-Versioning
-----------
-
-The version number format for this library and the changes to the library associated with version number increments conform to `Semantic Versioning 2.0.0 <https://semver.org/#semantic-versioning-200>`__.
-
-Publishing
-----------
-
-This library can be published as a `package on PyPI <https://pypi.org/project/secretvaults>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
-
-Ensure that any links in this README document to the Read the Docs documentation of this package (or its dependencies) have appropriate version numbers. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions.
