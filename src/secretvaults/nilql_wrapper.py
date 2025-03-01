@@ -158,12 +158,18 @@ class NilQLWrapper:
                             encrypted[key] = {"%allot": encrypted_value}
                         else:
                             encrypted[key] = await encrypt_deep(value)
+                    elif isinstance(value, list):
+                        encrypted[key] = await encrypt_deep(value)
                     else:
                         encrypted[key] = value
             else:  # list
                 for item in obj:
-                    encrypted_item = await encrypt_deep(item)
-                    encrypted.append(encrypted_item)
+                    if "%allot" in item:
+                        encrypted_value = await self.encrypt(item["%allot"])
+                        encrypted.append({"%allot": encrypted_value})
+                    else:
+                        encrypted_item = await encrypt_deep(item)
+                        encrypted.append(encrypted_item)
 
             return encrypted
 

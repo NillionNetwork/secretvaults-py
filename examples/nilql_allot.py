@@ -1,4 +1,5 @@
 """nilQL encryption example with allot using the nilQL wrapper"""
+
 import asyncio
 import json
 import sys
@@ -22,6 +23,10 @@ async def main():
                 "test_nested_4": None,
             },
         },
+        "test_list": [
+            {"%allot": "list item 1"},
+            {"%allot": "list item 2"},
+        ],
         "rating_of_product": 8,
         "test_null": None,
     }
