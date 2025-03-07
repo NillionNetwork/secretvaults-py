@@ -1,19 +1,24 @@
 """SecretVaultWrapper manages distributed data storage across multiple nodes"""
 
 import asyncio
+import json
+import secrets
 import uuid
 import time
+from datetime import datetime, timedelta, timezone
 from http import HTTPMethod
 from typing import List, Dict, Any, Union, Optional
 
 import aiohttp
 import jwt
+import nuc
+import requests
 from ecdsa import SigningKey, SECP256k1
 
 from .nilql_wrapper import NilQLWrapper, OperationType, KeyType
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-public-methods
 class SecretVaultWrapper:
     """
     SecretVaultWrapper manages distributed data storage across multiple nodes.
@@ -42,6 +47,8 @@ class SecretVaultWrapper:
         encryption_key_type: KeyType = KeyType.CLUSTER,
         encryption_secret_key: Optional[str] = None,
         encryption_secret_key_seed: Optional[str] = None,
+        use_nucs: bool = False,
+        root_nuc_token: nuc.NucTokenEnvelope = None,
     ):
         self.nodes = nodes
         self.nodes_jwt = None
@@ -54,6 +61,8 @@ class SecretVaultWrapper:
         self.encryption_key_type = encryption_key_type
         self.encryption_secret_key = encryption_secret_key
         self.encryption_secret_key_seed = encryption_secret_key_seed
+        self.use_nucs = use_nucs
+        self.root_nuc_token = root_nuc_token
 
     async def init(self) -> NilQLWrapper:
         """
@@ -79,7 +88,13 @@ class SecretVaultWrapper:
         node_configs = []
         for node in self.nodes:
             token = await self.generate_node_token(node["did"])
-            node_configs.append({"url": node["url"], "jwt": token})
+            node_configs.append(
+                {
+                    "url": node["url"],
+                    "did": node["did"],
+                    "token": token,
+                }
+            )
         self.nodes_jwt = node_configs
 
         # Initiate the NilQLWrapper
@@ -92,7 +107,33 @@ class SecretVaultWrapper:
         )
         return self.nilql_wrapper
 
-    async def generate_node_token(self, node_did: str) -> str:
+    async def generate_node_token(
+        self,
+        node_did: str,
+        command: Optional[str] = None,
+        args: Optional[dict] = None,
+    ) -> str:
+        """
+        Generates a node token, choosing between NUC or JWT based on configuration.
+
+        Args:
+            node_did (str): The decentralized identifier (DID) of the node.
+            command (Optional[str]): The optional command for nuc generation.
+            args (Optional[dict]): The optional arguments for nuc generation.
+
+        Returns:
+            str: The generated token (either NUC or JWT).
+        """
+
+        if self.use_nucs:
+            if command:
+                return await self.generate_node_operation_nuc_token(node_did, command, args)
+            else:
+                return await self.generate_node_nuc_token(node_did)
+
+        return await self.generate_node_jwt_token(node_did)
+
+    async def generate_node_jwt_token(self, node_did: str) -> str:
         """
         Generates a JWT token for node authentication using ES256K.
 
@@ -121,7 +162,7 @@ class SecretVaultWrapper:
 
         return token
 
-    async def generate_tokens_for_all_nodes(self) -> List[Dict[str, str]]:
+    async def generate_jwt_tokens_for_all_nodes(self) -> List[Dict[str, str]]:
         """
         Generates tokens for all nodes.
 
@@ -140,8 +181,125 @@ class SecretVaultWrapper:
         tokens = []
         for node in self.nodes:
             token = await self.generate_node_token(node["did"])
-            tokens.append({"node": node["url"], "token": token})
+            tokens.append(
+                {
+                    "url": node["url"],
+                    "did": node["did"],
+                    "token": token,
+                }
+            )
         return tokens
+
+    async def generate_node_operation_nuc_token(
+        self,
+        node_did: str,
+        command: str,
+        args: Optional[dict] = None,
+    ) -> nuc.NucToken:
+        """
+        Generates a nuc token for a specific node operation.
+        This function either retrieves an existing node NUC token or generates a new one.
+        It then builds a new NUC token for the specified operation, signs it using ECDSA,
+        and ensures that the generated token is valid.
+
+        Args:
+            node_did (str): The decentralized identifier (DID) of the node.
+            command (str): The command associated with the operation.
+            args (Optional[dict]): Additional arguments for the command (default is None).
+
+        Raises:
+            nuc.ValidationError: If the generated node operation token fails signature validation.
+            nuc.NucTokenBuildError: If an error occurs while building the node operation token.
+
+        Returns:
+            nuc.NucToken: The validated node operation NUC token.
+        """
+        if not (node_nuc_token := next((node["jwt"] for node in self.nodes_jwt if node["did"] == node_did), None)):
+            node_nuc_token = self.generate_node_nuc_token(node_did)
+
+        try:
+            node_operation_token: str = nuc.NucTokenBuilder(
+                extending=nuc.NucTokenEnvelope.parse(node_nuc_token),
+                command=command,
+                args=args,
+                expires_at=datetime.now(timezone.utc) + timedelta(minutes=1),
+                build=self.credentials["secret_key"],
+            )
+            if nuc.NucTokenEnvelope.decode(node_operation_token).validate_signatures():
+                return node_operation_token
+            raise nuc.ValidationError("Generated nuc node operation token was invalid")
+        except nuc.NucTokenBuildError as e:
+            raise nuc.NucTokenBuildError("Failed to build node nuc operation token") from e
+
+    async def generate_node_nuc_token(self, node_did: str) -> nuc.NucToken:
+        """
+        Generates a node-level Nuc Token, extending from the root Nuc Token.
+
+        Args:
+            node_did (str): The decentralized identifier (DID) of the node for which the token is being generated.
+
+        Raises:
+            nuc.ValidationError: If the generated node token fails signature validation.
+            nuc.NucTokenBuildError: If an error occurs while building the node token.
+
+        Returns:
+            nuc.NucToken: The validated node Nuc Token.
+        """
+        if not self.root_nuc_token:
+            self.root_nuc_token = self.generate_root_nuc_token()
+
+        try:
+            node_token: str = nuc.NucTokenBuilder(
+                extending=nuc.NucTokenEnvelope.parse(self.root_nuc_token),
+                audience=node_did,
+                command="/nil/db",
+                build=self.credentials["secret_key"],
+            )
+            if nuc.NucTokenEnvelope.decode(node_token).validate_signatures():
+                return node_token
+            raise nuc.ValidationError("Generated node token was invalid")
+        except nuc.NucTokenBuildError as e:
+            raise nuc.NucTokenBuildError("Failed to build node nuc token") from e
+
+    async def generate_root_nuc_token(self) -> nuc.NucToken:
+        """
+        This function signs a payload containing a secure random nonce using ECDSA,
+        sends the request to the authority service, and retrieves a root Nuc token.
+
+        Raises:
+            requests.HTTPError: If the HTTP request fails.
+            ValueError: If the response is not valid JSON.
+            KeyError: If the response JSON does not contain the expected "token" field.
+            OperationalError: If the retrieved token is invalid.
+
+        Returns:
+            nuc.NucToken: The validated root Nuc token.
+        """
+
+        key = self.signer
+        payload = json.dumps(
+            {
+                "nonce": list(secrets.token_bytes(16)),
+            }
+        ).encode("utf8")
+        signature = key.ecdsa_serialize_compact(key.ecdsa_sign(payload))
+        request = {
+            "public_key": self.credentials["org_did"],
+            "signature": signature.hex(),
+            "payload": payload.hex(),
+        }
+        # Contact the authority service
+        response = requests.post("http://127.0.0.1:30921/api/v1/nucs/create", json=request)
+        response.raise_for_status()
+        try:
+            root_token = response.json()["token"]
+            if nuc.NucTokenEnvelope.decode(root_token).validate_signatures():
+                return root_token
+            raise nuc.ValidationError("Generated root token from the authority service was invalid")
+        except ValueError as e:
+            raise ValueError("Failed to parse JSON response from the authority service") from e
+        except KeyError:
+            raise KeyError("Token not found in the response from the authority service")
 
     @staticmethod
     async def make_request(
@@ -231,7 +389,11 @@ class SecretVaultWrapper:
         """
 
         async def flush_node(node: Dict[str, str]) -> Dict[str, Any]:
-            jwt_token = await self.generate_node_token(node["did"])
+            jwt_token = await self.generate_node_token(
+                node["did"],
+                command="/nil/db/delete",
+                args={"schema_id": self.schema_id},
+            )
             payload = {"schema": self.schema_id}
             result = await self.make_request(
                 node["url"],
@@ -263,7 +425,10 @@ class SecretVaultWrapper:
         Example:
             schemas = await wrapper.get_schemas()
         """
-        jwt_token = await self.generate_node_token(self.nodes[0]["did"])
+        jwt_token = await self.generate_node_token(
+            self.nodes[0]["did"],
+            command="/nil/db/read",
+        )
         result = await self.make_request(
             self.nodes[0]["url"],
             "schemas",
@@ -305,7 +470,10 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def create_schema_for_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_token(
+                node["did"],
+                command="/nil/db/write",
+            )  # Generate token for the node
             await self.make_request(
                 node["url"],  # Node URL
                 "schemas",  # Endpoint for schema creation
@@ -335,7 +503,11 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def delete_schema_from_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_token(
+                node["did"],
+                command="/nil/db/delete",
+                args={"schema_id": schema_id},
+            )  # Generate token for the node
             await self.make_request(
                 node["url"],  # Node URL
                 "schemas",  # Endpoint for schema deletion
@@ -388,7 +560,11 @@ class SecretVaultWrapper:
                     else:
                         node_data.append(encrypted_shares[i])
 
-                jwt_token = await self.generate_node_token(node["did"])
+                jwt_token = await self.generate_node_token(
+                    node["did"],
+                    command="/nil/db/write",
+                    args={"schema_id": self.schema_id},
+                )
                 payload = {
                     "schema": self.schema_id,
                     "data": node_data,
@@ -428,7 +604,11 @@ class SecretVaultWrapper:
         # Function to read from each node
         async def read_from_node(node: Dict[str, str]) -> Dict[str, Any]:
             try:
-                jwt_token = await self.generate_node_token(node["did"])
+                jwt_token = await self.generate_node_token(
+                    node["did"],
+                    command="/nil/db/read",
+                    args={"schema_id": self.schema_id},
+                )
                 payload = {
                     "schema": self.schema_id,
                     "filter": data_filter or {},
@@ -500,7 +680,11 @@ class SecretVaultWrapper:
                 node_data = node_data[i] if len(node_data) == len(self.nodes) else node_data[0]
 
                 # Generate the JWT token for the node
-                jwt_token = await self.generate_node_token(node["did"])
+                jwt_token = await self.generate_node_token(
+                    node["did"],
+                    command="/nil/db/write",
+                    args={"schema_id": self.schema_id},
+                )
 
                 # Prepare the payload for the update request
                 payload = {
@@ -548,7 +732,11 @@ class SecretVaultWrapper:
         async def delete_node(node: Dict[str, str]) -> Dict[str, Any]:
             try:
                 # Generate the JWT token for the node
-                jwt_token = await self.generate_node_token(node["did"])
+                jwt_token = await self.generate_node_token(
+                    node["did"],
+                    command="/nil/db/delete",
+                    args={"schema_id": self.schema_id},
+                )
 
                 # Prepare the payload for the delete request
                 payload = {
@@ -590,7 +778,10 @@ class SecretVaultWrapper:
             queries = await wrapper.get_queries()
         """
         # Generate a token for the first node
-        jwt_token = await self.generate_node_token(self.nodes[0]["did"])
+        jwt_token = await self.generate_node_token(
+            self.nodes[0]["did"],
+            command="/nil/db/read",
+        )
 
         # Make a request to the queries endpoint of the first node
         result = await self.make_request(
@@ -636,7 +827,11 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def create_query_for_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_token(
+                node["did"],
+                command="/nil/db/write",
+                args={"schema_id": schema_id},
+            )  # Generate token for the node
             await self.make_request(
                 node["url"],
                 "queries",
@@ -666,7 +861,11 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def delete_query_from_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_token(
+                node["did"],
+                command="/nil/db/delete",
+                args={"query_id": query_id},
+            )  # Generate token for the node
             await self.make_request(
                 node["url"],
                 "queries",
@@ -692,7 +891,10 @@ class SecretVaultWrapper:
 
         async def execute_query_on_node(node: Dict[str, str]) -> Dict[str, Any]:
             try:
-                jwt_token = await self.generate_node_token(node["did"])
+                jwt_token = await self.generate_node_token(
+                    node["did"],
+                    command="/nil/db/read",
+                )
                 result = await self.make_request(
                     node["url"],
                     "queries/execute",

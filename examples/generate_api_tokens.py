@@ -19,7 +19,7 @@ async def main():
         await org.init()
 
         # Generate API tokens for all nodes
-        api_tokens = await org.generate_tokens_for_all_nodes()
+        api_tokens = await org.generate_jwt_tokens_for_all_nodes()
         print("🪙 API Tokens:", json.dumps(api_tokens, indent=2))
 
     except RuntimeError as error:
