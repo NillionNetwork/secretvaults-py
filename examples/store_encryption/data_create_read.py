@@ -46,7 +46,7 @@ async def main():
             org_config["nodes"],
             org_config["org_credentials"],
             SCHEMA_ID,
-            operation=OperationType.STORE.value,
+            operation=OperationType.STORE,
         )
         await collection.init()
 

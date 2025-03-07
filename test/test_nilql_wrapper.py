@@ -16,13 +16,13 @@ def cluster_config():
 @pytest.fixture
 def wrapper_store(cluster_config):
     """Fixture for NilQLWrapper with STORE operation."""
-    return NilQLWrapper(cluster_config, OperationType.STORE.value)
+    return NilQLWrapper(cluster_config, OperationType.STORE)
 
 
 @pytest.fixture
 def wrapper_sum(cluster_config):
     """Fixture for NilQLWrapper with SUM operation."""
-    return NilQLWrapper(cluster_config, OperationType.SUM.value)
+    return NilQLWrapper(cluster_config, OperationType.SUM)
 
 
 @pytest.fixture
@@ -40,23 +40,23 @@ def test_secret_key_initialization(wrapper_store, wrapper_sum, wrapper_match):
 
 def test_secret_key_generation_with_seed(cluster_config):
     """Test secret key generation with a fixed seed."""
-    wrapper_with_seed = NilQLWrapper(cluster_config, OperationType.STORE.value, secret_key_seed=SEED)
+    wrapper_with_seed = NilQLWrapper(cluster_config, OperationType.STORE, secret_key_seed=SEED)
     assert isinstance(wrapper_with_seed.secret_key, nilql.SecretKey)
 
 
 def test_invalid_secret_key_generation():
     """Test error handling during invalid secret key generation."""
     with pytest.raises(ValueError, match="valid cluster configuration is required"):
-        NilQLWrapper(cluster=123, operation=OperationType.STORE.value)
+        NilQLWrapper(cluster=123, operation=OperationType.STORE)
 
     with pytest.raises(ValueError, match="cluster configuration must contain at least one node"):
-        NilQLWrapper(cluster={"nodes": []}, operation=OperationType.STORE.value)
+        NilQLWrapper(cluster={"nodes": []}, operation=OperationType.STORE)
 
 
 def test_key_type_enum():
     """Test KeyType enum values."""
-    assert KeyType.CLUSTER.value == "cluster"
-    assert KeyType.SECRET.value == "secret"
+    assert KeyType.CLUSTER == "cluster"
+    assert KeyType.SECRET == "secret"
 
     assert KeyType["CLUSTER"] == KeyType.CLUSTER
     assert KeyType["SECRET"] == KeyType.SECRET

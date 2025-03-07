@@ -23,7 +23,7 @@ async def main():
         org = SecretVaultWrapper(
             org_config["nodes"],
             org_config["org_credentials"],
-            operation=OperationType.STORE.value,
+            operation=OperationType.STORE,
         )
         await org.init()
 
