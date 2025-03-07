@@ -25,7 +25,7 @@ async def main():
         org = SecretVaultWrapper(
             org_config["nodes"],
             org_config["org_credentials"],
-            operation=OperationType.SUM.value,  # we'll be doing a sum operation on encrypted values
+            operation=OperationType.SUM,  # we'll be doing a sum operation on encrypted values
         )
         await org.init()
 

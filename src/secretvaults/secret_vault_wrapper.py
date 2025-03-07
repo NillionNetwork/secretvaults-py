@@ -37,7 +37,7 @@ class SecretVaultWrapper:
         nodes: List[Dict[str, str]],
         credentials: Dict[str, str],
         schema_id: str = None,
-        operation: str = OperationType.STORE.value,
+        operation: str = OperationType.STORE,
         token_expiry_seconds: int = 60,
         encryption_key_type: KeyType = KeyType.CLUSTER,
         encryption_secret_key: Optional[str] = None,

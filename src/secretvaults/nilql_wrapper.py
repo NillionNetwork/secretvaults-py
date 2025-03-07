@@ -8,14 +8,14 @@ import nilql
 NIQL_INIT_ERROR = "NilQLWrapper not initialized. Call init() first."
 
 
-class KeyType(Enum):
+class KeyType(str, Enum):
     """Define an enum for key types"""
 
     CLUSTER = "cluster"
     SECRET = "secret"
 
 
-class OperationType(Enum):
+class OperationType(str, Enum):
     """Define an enum for operations"""
 
     STORE = "store"
@@ -39,7 +39,7 @@ class NilQLWrapper:
     def __init__(
         self,
         cluster: dict,
-        operation: str = OperationType.STORE.value,
+        operation: str = OperationType.STORE,
         secret_key: Optional[nilql.SecretKey] = None,
         secret_key_seed: Optional[str] = None,
         key_type: KeyType = KeyType.CLUSTER,

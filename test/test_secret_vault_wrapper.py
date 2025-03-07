@@ -34,7 +34,7 @@ def wrapper(test_nodes, test_credentials):
         nodes=test_nodes,
         credentials=test_credentials,
         schema_id="test_schema",
-        operation=OperationType.STORE.value,
+        operation=OperationType.STORE,
     )
 
 
@@ -43,7 +43,7 @@ def test_initialization(wrapper, test_nodes, test_credentials):
     assert wrapper.nodes == test_nodes
     assert wrapper.credentials == test_credentials
     assert wrapper.schema_id == "test_schema"
-    assert wrapper.operation == OperationType.STORE.value
+    assert wrapper.operation == OperationType.STORE
     assert wrapper.token_expiry_seconds == 60  # default
 
 
