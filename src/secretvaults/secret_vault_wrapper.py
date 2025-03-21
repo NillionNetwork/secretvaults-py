@@ -358,7 +358,8 @@ class SecretVaultWrapper:
 
         Args:
             data (List[Dict[str, Any]]): A list of records to be written to the nodes.
-            allot_data (bool, optional): Whether to allot the data before writing. Defaults to True. If False, you need to ensure that the data has an _id field.
+            allot_data (bool, optional): Whether to allot the data before writing. Defaults to True.
+            If False, you need to ensure that the data has an _id field.
 
         Returns:
             List[Dict[str, Any]]: The response from the nodes.
@@ -383,7 +384,8 @@ class SecretVaultWrapper:
             # Encrypts and transforms the data before sending it to the nodes
             transformed_data = await self.allot_data(id_data)
         else:
-            # If allot_data is False, we assume that the data has already been transformed and encrypted and has an _id field
+            # If allot_data is False, we assume that the data has already been transformed
+            # and encrypted and has an _id field
             transformed_data = data
 
         # Define the async function to handle writing to a single node
