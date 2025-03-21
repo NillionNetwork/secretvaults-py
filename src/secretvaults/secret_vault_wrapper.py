@@ -348,12 +348,18 @@ class SecretVaultWrapper:
         tasks = [delete_schema_from_node(node) for node in self.nodes]
         await asyncio.gather(*tasks)
 
-    async def write_to_nodes(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def write_to_nodes(
+        self,
+        data: List[Dict[str, Any]],
+        allot_data: bool = True,
+    ) -> List[Dict[str, Any]]:
         """
         Writes data to all nodes, applying field encryption if necessary.
 
         Args:
             data (List[Dict[str, Any]]): A list of records to be written to the nodes.
+            allot_data (bool, optional): Whether to allot the data before writing. Defaults to True.
+            If False, you need to ensure that the data has an _id field.
 
         Returns:
             List[Dict[str, Any]]: The response from the nodes.
@@ -364,18 +370,23 @@ class SecretVaultWrapper:
         Example:
             results = await wrapper.write_to_nodes(data)
         """
-        # Adds an _id field to each record if it doesn't exist
-        id_data = []
-        for record in data:
-            if "_id" not in record:
-                new_record = record.copy()
-                new_record["_id"] = str(uuid.uuid4())  # Generate a new unique ID
-                id_data.append(new_record)
-            else:
-                id_data.append(record)
+        if allot_data:
+            # Adds an _id field to each record if it doesn't exist
+            id_data = []
+            for record in data:
+                if "_id" not in record:
+                    new_record = record.copy()
+                    new_record["_id"] = str(uuid.uuid4())  # Generate a new unique ID
+                    id_data.append(new_record)
+                else:
+                    id_data.append(record)
 
-        # Encrypts and transforms the data before sending it to the nodes
-        transformed_data = await self.allot_data(id_data)
+            # Encrypts and transforms the data before sending it to the nodes
+            transformed_data = await self.allot_data(id_data)
+        else:
+            # If allot_data is False, we assume that the data has already been transformed
+            # and encrypted and has an _id field
+            transformed_data = data
 
         # Define the async function to handle writing to a single node
         async def write_to_node(i: int, node: Dict[str, str]) -> Dict[str, Any]:
@@ -410,12 +421,17 @@ class SecretVaultWrapper:
 
         return results
 
-    async def read_from_nodes(self, data_filter: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+    async def read_from_nodes(
+        self,
+        data_filter: Dict[str, Any] = None,
+        unify_data: bool = True,
+    ) -> List[Dict[str, Any]]:
         """
         Reads data from all nodes and then recombines the shares to form the original records.
 
         Args:
             data_filter (Dict[str, Any]): A filter to apply when reading data.
+            unify_data (bool, optional): Whether to unify the data. Defaults to True.
 
         Returns:
             List[Dict[str, Any]]: A list of recombined records. Each record is the result of combining shares from
@@ -461,6 +477,10 @@ class SecretVaultWrapper:
                     group["shares"].append(record)
                 else:
                     record_groups.append({"shares": [record], "record_index": record.get("_id")})
+        if not unify_data:
+            # If unify_data is False, we return the record groups as is so
+            # reconstruction is done outside of this function.
+            return record_groups
 
         # Recombine the shares to form the original records
         recombined_records = []

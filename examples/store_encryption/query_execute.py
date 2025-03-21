@@ -5,7 +5,7 @@ import json
 import sys
 
 from secretvaults import SecretVaultWrapper, OperationType
-from examples.sum_encryption.org_config import org_config
+from org_config import org_config
 
 # Update QUERY ID with your own value
 QUERY_ID = "8bc937fd-aca8-485b-89a9-886e507ce64b"
