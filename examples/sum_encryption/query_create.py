@@ -5,7 +5,7 @@ import json
 import sys
 
 from secretvaults import SecretVaultWrapper
-from examples.sum_encryption.org_config import org_config
+from org_config import org_config
 
 # Update schema ID with your own value
 SCHEMA_ID = "d412699f-6cda-44fe-84f0-b9498315c9ad"
