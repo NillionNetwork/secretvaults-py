@@ -1,5 +1,7 @@
 """Test suite for SecretVaultWrapper"""
 
+import base64
+
 import pytest
 import jwt
 import time
@@ -162,6 +164,85 @@ async def test_delete_schema(wrapper):
     await wrapper.delete_schema(schema_id)
 
     wrapper.make_request.assert_called()
+
+
+@pytest.fixture
+def sample_file(tmp_path):
+    # Create a temporary sample file
+    file = tmp_path / "sample.txt"
+    file.write_text("Hello, world!")
+    return str(file)
+
+
+def test_encode_file_to_str_success(wrapper, sample_file):
+    encoded_str = wrapper.encode_file_to_str(sample_file)
+
+    assert isinstance(encoded_str, str)
+    assert len(encoded_str) > 0
+
+    # Verify decoding gives the original content
+    decoded_content = base64.b64decode(encoded_str).decode("utf-8")
+    assert decoded_content == "Hello, world!"
+
+
+def test_encode_file_to_str_failure(wrapper):
+    encoded_str = wrapper.encode_file_to_str("nonexistentfile.txt")
+
+    assert encoded_str == ""
+
+
+def test_decode_file_from_str_success(wrapper, tmp_path):
+    original_content = "Hello, again!"
+    encoded_content = base64.b64encode(original_content.encode("utf-8")).decode("utf-8")
+
+    output_file = tmp_path / "output.txt"
+    result = wrapper.decode_file_from_str(encoded_content, str(output_file))
+
+    assert result is True
+    assert output_file.read_text() == original_content
+
+
+def test_decode_file_from_str_failure(wrapper):
+    invalid_base64 = "!!!!thisisnotbase64!!!!"
+    result = wrapper.decode_file_from_str(invalid_base64, "output.txt")
+
+    assert result is False  # Should fail to decode and write
+
+
+def test_allot_into_chunks_small_data(wrapper):
+    small_data = "A" * 1000  # Smaller than 4096
+    chunks = wrapper.allot_into_chunks(small_data)
+
+    assert isinstance(chunks, list)
+    assert len(chunks) == 1  # Only one list
+    assert len(chunks[0]) == 1  # Only one chunk
+
+    assert chunks[0][0]["%allot"] == "A" * 1000
+
+
+def test_allot_into_chunks_large_data(wrapper):
+    # Make data big enough to require multiple partitions
+    large_data = "B" * (4096 * 50)  # 50 chunks
+
+    chunks = wrapper.allot_into_chunks(large_data)
+
+    assert isinstance(chunks, list)
+    assert all(isinstance(batch, list) for batch in chunks)
+    total_chunks = sum(len(batch) for batch in chunks)
+
+    # Should have created 50 small chunks
+    assert total_chunks == 50
+
+
+def test_allot_into_chunks_edge_case_exact_size(wrapper):
+    # Exactly matching MAX_RECORD_SIZE_BYTES (assume the constant is 15MB)
+    data_size = 15 * 1024 * 1024  # 15MB
+    fake_data = "X" * data_size
+
+    chunks = wrapper.allot_into_chunks(fake_data)
+
+    # Should fit into one batch
+    assert len(chunks) == 1
 
 
 @pytest.mark.asyncio

@@ -52,7 +52,7 @@ class NilQLWrapper:
 
         # Reforge the SecretKey from seed if provided
         if self.secret_key_seed and not self.secret_key:
-            self.secret_key = nilql.SecretKey.generate(self.cluster, self.operation, self.secret_key_seed)
+            self.secret_key = nilql.SecretKey.generate(self.cluster, self.operation, seed=self.secret_key_seed)
 
         # Initialize the appropriate key if not provided
         if self.secret_key is None:
