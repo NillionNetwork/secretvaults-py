@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "File storage",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "_id": {
+        "type": "string",
+        "format": "uuid",
+        "coerce": true
+      },
+      "file_name": {
+        "type": "string"
+      },
+      "file": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "%share": {
+                    "type": "string"
+                }
+            },
+            "required": ["%share"]
+        }
+      },
+        "file_sequence": {
+        "type": "integer"
+      }
+    },
+    "required": ["_id", "file", "file_name", "file_sequence"]
+  }
+}

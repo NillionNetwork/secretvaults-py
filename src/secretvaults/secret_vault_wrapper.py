@@ -1,6 +1,9 @@
 """SecretVaultWrapper manages distributed data storage across multiple nodes"""
 
 import asyncio
+import base64
+import binascii
+import math
 import uuid
 import time
 from http import HTTPMethod
@@ -11,6 +14,8 @@ import jwt
 from ecdsa import SigningKey, SECP256k1
 
 from .nilql_wrapper import NilQLWrapper, OperationType, KeyType
+
+MAX_RECORD_SIZE_BYTES = 15 * 1024 * 1024  # 15 MB
 
 
 # pylint: disable=too-many-instance-attributes
@@ -318,6 +323,81 @@ class SecretVaultWrapper:
         await asyncio.gather(*tasks)
 
         return schema_id
+
+    def encode_file_to_str(self, file_path: str) -> str:
+        """
+        Encode a file's binary contents into a base64-encoded string.
+
+        Args:
+            file_path (str): Path to the file to encode.
+
+        Returns:
+            str: Base64-encoded string representation of the file's contents.
+                 Returns an empty string if the file cannot be read.
+        """
+        try:
+            with open(file_path, "rb") as f:
+                file_bytes = f.read()
+        except (OSError, IOError) as e:
+            print(f"Failed to read file {file_path}: {e}")
+            return ""
+
+        return base64.b64encode(file_bytes).decode("utf-8")
+
+    def decode_file_from_str(self, encoded_string: str, file_path: str) -> bool:
+        """
+        Decode a base64-encoded string and write it to a file.
+
+        Args:
+            encoded_string (str): Base64-encoded string representing the file's contents.
+            file_path (str): Destination path where the decoded file will be written.
+
+        Returns:
+            bool: True if the file was successfully written, False otherwise.
+        """
+        try:
+            file_bytes = base64.b64decode(encoded_string, validate=True)
+        except (binascii.Error, ValueError) as e:
+            print(f"Failed to decode base64 string: {e}")
+            return False
+
+        try:
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+                return True
+        except (OSError, IOError) as e:
+            print(f"Failed to write file {file_path}: {e}")
+            return False
+
+    def allot_into_chunks(self, data: str) -> list[list[dict[str, str]]]:
+        """
+        Split a string into 4096-character chunks and partition into multiple lists if the size is more
+        than the MAX_RECORD_SIZE_BYTES.
+
+        Args:
+            data (str): The input string to split.
+
+        Returns:
+            list[list[dict[str, str]]]: A list of lists, each containing chunk dictionaries.
+        """
+        # Create all chunks
+        chunk_list = [{"%allot": data[i : i + 4096]} for i in range(0, len(data), 4096)]
+
+        # Estimate total size
+        total_size_bytes = len(data)
+
+        if total_size_bytes <= MAX_RECORD_SIZE_BYTES:
+            return [chunk_list]
+
+        # Calculate how many parts we need
+        parts = math.ceil(total_size_bytes / MAX_RECORD_SIZE_BYTES)
+
+        # Split chunk_list evenly into 'parts' lists
+        chunks_per_part = math.ceil(len(chunk_list) / parts)
+
+        result = [chunk_list[i : i + chunks_per_part] for i in range(0, len(chunk_list), chunks_per_part)]
+
+        return result
 
     async def delete_schema(self, schema_id: str) -> None:
         """
