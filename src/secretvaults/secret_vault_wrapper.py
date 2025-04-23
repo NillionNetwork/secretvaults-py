@@ -18,7 +18,7 @@ from .nilql_wrapper import NilQLWrapper, OperationType, KeyType
 MAX_RECORD_SIZE_BYTES = 15 * 1024 * 1024  # 15 MB
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-public-methods
 class SecretVaultWrapper:
     """
     SecretVaultWrapper manages distributed data storage across multiple nodes.
