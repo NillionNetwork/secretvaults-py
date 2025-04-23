@@ -501,6 +501,38 @@ class SecretVaultWrapper:
 
         return results
 
+    async def read_from_single_node(
+        self,
+        node: Dict[str, str],
+        data_filter: Dict[str, Any] = None,
+    ) -> Dict[str, Any]:
+        """
+        Reads data from a single node and returns the data.
+
+        Args:
+            node (Dict[str, str]): The target node to read from.
+            data_filter (Dict[str, Any], optional): The filter to apply when reading data.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the response from the single node.
+        """
+        try:
+            jwt_token = await self.generate_node_token(node["did"])
+            payload = {
+                "schema": self.schema_id,
+                "filter": data_filter or {},
+            }
+            result = await self.make_request(
+                node["url"],
+                "data/read",
+                jwt_token,
+                payload,
+            )
+            return {"node": node["url"], "data": result.get("data", [])}
+        except RuntimeError as e:
+            print(f"❌ Failed to read from {node['url']}: {str(e)}")
+            return {"node": node["url"], "error": str(e)}
+
     async def read_from_nodes(
         self,
         data_filter: Dict[str, Any] = None,
@@ -521,27 +553,8 @@ class SecretVaultWrapper:
             records = await wrapper.read_from_nodes({"_id": "XXXXXXXXXXXXXXXXXXX"})
         """
 
-        # Function to read from each node
-        async def read_from_node(node: Dict[str, str]) -> Dict[str, Any]:
-            try:
-                jwt_token = await self.generate_node_token(node["did"])
-                payload = {
-                    "schema": self.schema_id,
-                    "filter": data_filter or {},
-                }
-                result = await self.make_request(
-                    node["url"],
-                    "data/read",
-                    jwt_token,
-                    payload,
-                )
-                return {"node": node["url"], "data": result.get("data", [])}
-            except RuntimeError as e:
-                print(f"❌ Failed to read from {node['url']}: {str(e)}")
-                return {"node": node["url"], "error": str(e)}
-
         # Run the node reading tasks in parallel using asyncio.gather
-        tasks = [read_from_node(node) for node in self.nodes]
+        tasks = [self.read_from_single_node(node, data_filter) for node in self.nodes]
         results_from_all_nodes = await asyncio.gather(*tasks)
 
         # Groups records from different nodes by _id field
