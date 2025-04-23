@@ -779,6 +779,37 @@ class SecretVaultWrapper:
         tasks = [delete_query_from_node(node) for node in self.nodes]
         await asyncio.gather(*tasks)
 
+    async def execute_query_on_single_node(
+        self,
+        node: Dict[str, str],
+        query_payload: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Executes a query on a single node and returns the results.
+
+        Args:
+            node: Dict[str, str]: The target node for unify
+            query_payload (Dict[str, Any]): The query payload to execute.
+
+        Returns:
+            [Dict[str, Any]]: The query response from a single node.
+        """
+        try:
+            jwt_token = await self.generate_node_token(node["did"])
+            result = await self.make_request(
+                node["url"],
+                "queries/execute",
+                jwt_token,
+                query_payload,
+            )
+            return {
+                "node": node["url"],
+                "data": result.get("data", []),
+            }
+        except RuntimeError as e:
+            print(f"❌ Failed to execute query on {node['url']}: {str(e)}")
+            return {"node": node["url"], "error": str(e)}
+
     async def query_execute_on_nodes(self, query_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Executes a query on all nodes and unifies the results.
@@ -789,26 +820,8 @@ class SecretVaultWrapper:
         Returns:
             List[Dict[str, Any]]: A list of unified records resulting from executing the query across all nodes.
         """
-
-        async def execute_query_on_node(node: Dict[str, str]) -> Dict[str, Any]:
-            try:
-                jwt_token = await self.generate_node_token(node["did"])
-                result = await self.make_request(
-                    node["url"],
-                    "queries/execute",
-                    jwt_token,
-                    query_payload,
-                )
-                return {
-                    "node": node["url"],
-                    "data": result.get("data", []),
-                }
-            except RuntimeError as e:
-                print(f"❌ Failed to execute query on {node['url']}: {str(e)}")
-                return {"node": node["url"], "error": str(e)}
-
         # Execute queries in parallel on all nodes
-        tasks = [execute_query_on_node(node) for node in self.nodes]
+        tasks = [self.execute_query_on_single_node(node, query_payload) for node in self.nodes]
         results_from_all_nodes = await asyncio.gather(*tasks)
 
         # Groups records from different nodes by _id field
