@@ -12,6 +12,9 @@ from typing import List, Dict, Any, Union, Optional
 import aiohttp
 import jwt
 from ecdsa import SigningKey, SECP256k1
+from nuc.envelope import NucTokenEnvelope
+from nuc.token import Command, Did
+from nuc.builder import NucTokenBuilder, InvocationBody, PrivateKey
 
 from .nilql_wrapper import NilQLWrapper, OperationType, KeyType
 
@@ -41,7 +44,8 @@ class SecretVaultWrapper:
         self,
         nodes: List[Dict[str, str]],
         credentials: Dict[str, str],
-        schema_id: str = None,
+        root_nuc: NucTokenEnvelope,
+        schema_id: str,
         operation: str = OperationType.STORE,
         token_expiry_seconds: int = 60,
         encryption_key_type: KeyType = KeyType.CLUSTER,
@@ -51,6 +55,7 @@ class SecretVaultWrapper:
         self.nodes = nodes
         self.nodes_jwt = None
         self.credentials = credentials
+        self.root_nuc = root_nuc
         self.schema_id = schema_id
         self.operation = operation
         self.token_expiry_seconds = token_expiry_seconds
@@ -126,6 +131,17 @@ class SecretVaultWrapper:
 
         return token
 
+    async def generate_node_nuc(
+        self, node_did: str, cmd: Command, args: Dict[str, Any]
+    ) -> str:
+        return (
+            NucTokenBuilder.extending(self.root_nuc)
+            .command(cmd)
+            .audience(Did.parse(node_did))
+            .body(InvocationBody(args))
+            .build(PrivateKey(self.signer.to_string()))  # type: ignore
+        )
+
     async def generate_tokens_for_all_nodes(self) -> List[Dict[str, str]]:
         """
         Generates tokens for all nodes.
@@ -154,7 +170,9 @@ class SecretVaultWrapper:
         endpoint: str,
         token: str,
         payload: Dict[str, Any],
-        method: Union[HTTPMethod.POST, HTTPMethod.GET, HTTPMethod.DELETE] = HTTPMethod.POST,
+        method: Union[
+            HTTPMethod.POST, HTTPMethod.GET, HTTPMethod.DELETE
+        ] = HTTPMethod.POST,
     ) -> Dict[str, Any]:
         """
         Makes an HTTP request to the node endpoint using aiohttp.
@@ -189,9 +207,14 @@ class SecretVaultWrapper:
                     params=payload if method == HTTPMethod.GET else None,
                 ) as response:
                     if response.status >= 300:
-                        raise ConnectionError(f"Error: {response.status}, body: {await response.text()}")
+                        raise ConnectionError(
+                            f"Error: {response.status}, body: {await response.text()}"
+                        )
                     # Check if response contains a body
-                    if response.content_type and "application/json" in response.content_type.lower():
+                    if (
+                        response.content_type
+                        and "application/json" in response.content_type.lower()
+                    ):
                         return await response.json()
                     return {}
 
@@ -236,7 +259,9 @@ class SecretVaultWrapper:
         """
 
         async def flush_node(node: Dict[str, str]) -> Dict[str, Any]:
-            jwt_token = await self.generate_node_token(node["did"])
+            jwt_token = await self.generate_node_nuc(
+                node["did"], Command(["nil", "db", "data"]), {}
+            )
             payload = {"schema": self.schema_id}
             result = await self.make_request(
                 node["url"],
@@ -268,7 +293,9 @@ class SecretVaultWrapper:
         Example:
             schemas = await wrapper.get_schemas()
         """
-        jwt_token = await self.generate_node_token(self.nodes[0]["did"])
+        jwt_token = await self.generate_node_nuc(
+            self.nodes[0]["did"], Command(["nil", "db", "schemas"]), {}
+        )
         result = await self.make_request(
             self.nodes[0]["url"],
             "schemas",
@@ -279,7 +306,9 @@ class SecretVaultWrapper:
 
         return result
 
-    async def create_schema(self, schema: Dict[str, Any], schema_name: str, schema_id: str = None) -> str:
+    async def create_schema(
+        self, schema: Dict[str, Any], schema_name: str, schema_id: str = None
+    ) -> str:
         """
         Creates a new schema on all nodes in the cluster concurrently.
 
@@ -310,7 +339,9 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def create_schema_for_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_nuc(
+                node["did"], Command(["nil", "db", "schemas"]), {}
+            )
             await self.make_request(
                 node["url"],  # Node URL
                 "schemas",  # Endpoint for schema creation
@@ -395,7 +426,10 @@ class SecretVaultWrapper:
         # Split chunk_list evenly into 'parts' lists
         chunks_per_part = math.ceil(len(chunk_list) / parts)
 
-        result = [chunk_list[i : i + chunks_per_part] for i in range(0, len(chunk_list), chunks_per_part)]
+        result = [
+            chunk_list[i : i + chunks_per_part]
+            for i in range(0, len(chunk_list), chunks_per_part)
+        ]
 
         return result
 
@@ -415,7 +449,9 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def delete_schema_from_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_nuc(
+                node["did"], Command(["nil", "db", "schemas"]), {}
+            )
             await self.make_request(
                 node["url"],  # Node URL
                 "schemas",  # Endpoint for schema deletion
@@ -479,7 +515,9 @@ class SecretVaultWrapper:
                     else:
                         node_data.append(encrypted_shares[i])
 
-                jwt_token = await self.generate_node_token(node["did"])
+                jwt_token = await self.generate_node_nuc(
+                    node["did"], Command(["nil", "db", "data"]), {}
+                )
                 payload = {
                     "schema": self.schema_id,
                     "data": node_data,
@@ -517,7 +555,9 @@ class SecretVaultWrapper:
             Dict[str, Any]: A dictionary containing the response from the single node.
         """
         try:
-            jwt_token = await self.generate_node_token(node["did"])
+            jwt_token = await self.generate_node_nuc(
+                node["did"], Command(["nil", "db", "data"]), {}
+            )
             payload = {
                 "schema": self.schema_id,
                 "filter": data_filter or {},
@@ -563,13 +603,22 @@ class SecretVaultWrapper:
             for record in node_result.get("data", []):
                 # Find a group that already contains a record with the same _id
                 group = next(
-                    (g for g in record_groups if any(share.get("_id") == record.get("_id") for share in g["shares"])),
+                    (
+                        g
+                        for g in record_groups
+                        if any(
+                            share.get("_id") == record.get("_id")
+                            for share in g["shares"]
+                        )
+                    ),
                     None,
                 )
                 if group:
                     group["shares"].append(record)
                 else:
-                    record_groups.append({"shares": [record], "record_index": record.get("_id")})
+                    record_groups.append(
+                        {"shares": [record], "record_index": record.get("_id")}
+                    )
         if not unify_data:
             # If unify_data is False, we return the record groups as is so
             # reconstruction is done outside of this function.
@@ -607,13 +656,19 @@ class SecretVaultWrapper:
         transformed_data = await self.allot_data([record_update])
 
         # Function to update data on a single node
-        async def update_node(i: int, node: Dict[str, str], node_data: list) -> Dict[str, Any]:
+        async def update_node(
+            i: int, node: Dict[str, str], node_data: list
+        ) -> Dict[str, Any]:
             try:
                 # Map the encrypted shares to the correct node's data
-                node_data = node_data[i] if len(node_data) == len(self.nodes) else node_data[0]
+                node_data = (
+                    node_data[i] if len(node_data) == len(self.nodes) else node_data[0]
+                )
 
-                # Generate the JWT token for the node
-                jwt_token = await self.generate_node_token(node["did"])
+                # Generate the NUC token for the node
+                jwt_token = await self.generate_node_nuc(
+                    node["did"], Command(["nil", "db", "data"]), {}
+                )
 
                 # Prepare the payload for the update request
                 payload = {
@@ -636,12 +691,17 @@ class SecretVaultWrapper:
                 return {"node": node["url"], "error": str(e)}
 
         # Run the node update tasks in parallel using asyncio.gather
-        tasks = [update_node(i, node, transformed_data[0]) for i, node in enumerate(self.nodes)]
+        tasks = [
+            update_node(i, node, transformed_data[0])
+            for i, node in enumerate(self.nodes)
+        ]
         results = await asyncio.gather(*tasks)
 
         return results
 
-    async def delete_data_from_nodes(self, data_filter: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+    async def delete_data_from_nodes(
+        self, data_filter: Dict[str, Any] = None
+    ) -> List[Dict[str, Any]]:
         """
         Deletes data from all nodes based on the provided filter.
 
@@ -661,7 +721,9 @@ class SecretVaultWrapper:
         async def delete_node(node: Dict[str, str]) -> Dict[str, Any]:
             try:
                 # Generate the JWT token for the node
-                jwt_token = await self.generate_node_token(node["did"])
+                jwt_token = await self.generate_node_nuc(
+                    node["did"], Command(["nil", "db", "data"]), {}
+                )
 
                 # Prepare the payload for the delete request
                 payload = {
@@ -703,7 +765,9 @@ class SecretVaultWrapper:
             queries = await wrapper.get_queries()
         """
         # Generate a token for the first node
-        jwt_token = await self.generate_node_token(self.nodes[0]["did"])
+        jwt_token = await self.generate_node_nuc(
+            self.nodes[0]["did"], Command(["nil", "db", "queries", "add"]), {}
+        )
 
         # Make a request to the queries endpoint of the first node
         result = await self.make_request(
@@ -716,7 +780,13 @@ class SecretVaultWrapper:
 
         return result
 
-    async def create_query(self, query: Dict[str, Any], schema_id: str, query_name: str, query_id: str = None) -> str:
+    async def create_query(
+        self,
+        query: Dict[str, Any],
+        schema_id: str,
+        query_name: str,
+        query_id: str = None,
+    ) -> str:
         """
         Creates a new query on all nodes in the cluster concurrently.
 
@@ -749,7 +819,9 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def create_query_for_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_token(
+                node["did"]
+            )  # Generate token for the node
             await self.make_request(
                 node["url"],
                 "queries",
@@ -779,7 +851,9 @@ class SecretVaultWrapper:
 
         # Define an async function to handle the request for a single node
         async def delete_query_from_node(node: Dict[str, str]) -> None:
-            jwt_token = await self.generate_node_token(node["did"])  # Generate token for the node
+            jwt_token = await self.generate_node_token(
+                node["did"]
+            )  # Generate token for the node
             await self.make_request(
                 node["url"],
                 "queries",
@@ -823,7 +897,9 @@ class SecretVaultWrapper:
             print(f"❌ Failed to execute query on {node['url']}: {str(e)}")
             return {"node": node["url"], "error": str(e)}
 
-    async def query_execute_on_nodes(self, query_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def query_execute_on_nodes(
+        self, query_payload: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """
         Executes a query on all nodes and unifies the results.
 
@@ -834,7 +910,10 @@ class SecretVaultWrapper:
             List[Dict[str, Any]]: A list of unified records resulting from executing the query across all nodes.
         """
         # Execute queries in parallel on all nodes
-        tasks = [self.execute_query_on_single_node(node, query_payload) for node in self.nodes]
+        tasks = [
+            self.execute_query_on_single_node(node, query_payload)
+            for node in self.nodes
+        ]
         results_from_all_nodes = await asyncio.gather(*tasks)
 
         # Groups records from different nodes by _id field
@@ -849,14 +928,19 @@ class SecretVaultWrapper:
                     (
                         g
                         for g in record_groups
-                        if any(share.get(record_key) == record.get(record_key) for share in g["shares"])
+                        if any(
+                            share.get(record_key) == record.get(record_key)
+                            for share in g["shares"]
+                        )
                     ),
                     None,
                 )
                 if group:
                     group["shares"].append(record)
                 else:
-                    record_groups.append({"shares": [record], "record_index": record.get("_id")})
+                    record_groups.append(
+                        {"shares": [record], "record_index": record.get("_id")}
+                    )
 
         # Recombine the shares to form the original records
         recombined_result = []
