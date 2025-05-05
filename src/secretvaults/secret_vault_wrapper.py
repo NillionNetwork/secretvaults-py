@@ -64,6 +64,7 @@ class SecretVaultWrapper:
         self.encryption_key_type = encryption_key_type
         self.encryption_secret_key = encryption_secret_key
         self.encryption_secret_key_seed = encryption_secret_key_seed
+        self.log_tokens = False
 
     async def init(self) -> NilQLWrapper:
         """
@@ -516,8 +517,12 @@ class SecretVaultWrapper:
                         node_data.append(encrypted_shares[i])
 
                 jwt_token = await self.generate_node_nuc(
-                    node["did"], Command(["nil", "db", "data"]), {}
+                    node["did"],
+                    Command(["nil", "db", "data", "create"]),
+                    {"schema": self.schema_id},
                 )
+                if self.log_tokens:
+                    print(jwt_token)
                 payload = {
                     "schema": self.schema_id,
                     "data": node_data,
@@ -556,8 +561,12 @@ class SecretVaultWrapper:
         """
         try:
             jwt_token = await self.generate_node_nuc(
-                node["did"], Command(["nil", "db", "data"]), {}
+                node["did"],
+                Command(["nil", "db", "data", "read"]),
+                {"schema": self.schema_id, "filter": data_filter or {}},
             )
+            if self.log_tokens:
+                print(jwt_token)
             payload = {
                 "schema": self.schema_id,
                 "filter": data_filter or {},
