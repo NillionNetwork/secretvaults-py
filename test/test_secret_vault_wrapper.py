@@ -7,7 +7,7 @@ import jwt
 import time
 from ecdsa import SigningKey, SECP256k1
 from unittest.mock import AsyncMock
-from secretvaults import SecretVaultWrapper, OperationType, NilQLWrapper
+from secretvaults import SecretVaultWrapper, OperationType, BlindfoldWrapper
 
 SEED = "my_seed"
 
@@ -64,10 +64,10 @@ async def test_generate_node_token(wrapper):
 
 @pytest.mark.asyncio
 async def test_init(wrapper):
-    """Test SecretVaultWrapper initialization with NilQLWrapper."""
-    nilql_wrapper = await wrapper.init()
-    assert wrapper.nilql_wrapper is not None
-    assert isinstance(nilql_wrapper, NilQLWrapper)
+    """Test SecretVaultWrapper initialization with BlindfoldWrapper."""
+    blindfold_wrapper = await wrapper.init()
+    assert wrapper.blindfold_wrapper is not None
+    assert isinstance(blindfold_wrapper, BlindfoldWrapper)
 
 
 @pytest.mark.asyncio
@@ -85,8 +85,8 @@ async def test_generate_tokens_for_all_nodes(wrapper):
 @pytest.mark.asyncio
 async def test_allot_data(wrapper):
     """Test encrypting and transforming data before storage."""
-    wrapper.nilql_wrapper = AsyncMock()
-    wrapper.nilql_wrapper.prepare_and_allot.return_value = [{"encrypted_data": "mock"}]
+    wrapper.blindfold_wrapper = AsyncMock()
+    wrapper.blindfold_wrapper.prepare_and_allot.return_value = [{"encrypted_data": "mock"}]
 
     data = [{"field": "sensitive_data"}]
     encrypted_data = await wrapper.allot_data(data)
@@ -266,8 +266,8 @@ async def test_read_from_nodes(wrapper):
     """Test reading data from all nodes."""
     wrapper.generate_node_token = AsyncMock(return_value="mock_token")
     wrapper.make_request = AsyncMock(return_value={"data": [{"_id": "123", "value": "mock"}]})
-    wrapper.nilql_wrapper = AsyncMock()
-    wrapper.nilql_wrapper.unify.return_value = {"_id": "123", "value": "mock"}
+    wrapper.blindfold_wrapper = AsyncMock()
+    wrapper.blindfold_wrapper.unify.return_value = {"_id": "123", "value": "mock"}
 
     data = await wrapper.read_from_nodes()
     assert len(data) == 1
@@ -413,8 +413,8 @@ async def test_query_execute_on_nodes():
         ]
     )
 
-    wrapper.nilql_wrapper = AsyncMock()
-    wrapper.nilql_wrapper.unify.return_value = {"_id": "123", "value": "final_result"}
+    wrapper.blindfold_wrapper = AsyncMock()
+    wrapper.blindfold_wrapper.unify.return_value = {"_id": "123", "value": "final_result"}
 
     query_payload = {"query_id": "test_query"}
     result = await wrapper.query_execute_on_nodes(query_payload)
@@ -425,4 +425,4 @@ async def test_query_execute_on_nodes():
     assert result[0]["value"] == "final_result"
 
     assert wrapper.make_request.call_count == len(wrapper.nodes)
-    wrapper.nilql_wrapper.unify.assert_called_once()
+    wrapper.blindfold_wrapper.unify.assert_called_once()

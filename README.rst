@@ -1,7 +1,7 @@
 secretvaults
 =============
 
-Wrapper classes for simplifying usage of Nillion's Secret Vault and the nilQL encryption and decryption library.
+Wrapper classes for simplifying usage of Nillion's Secret Vault and the blindfold encryption and decryption library.
 
 |pypi| |readthedocs| |actions| |coveralls|
 
@@ -24,7 +24,7 @@ Wrapper classes for simplifying usage of Nillion's Secret Vault and the nilQL en
 Description and Purpose
 ------------------------
 
-This wrapper provides functions to simplify usage of Nillion's SecretVault and nilQL.
+This wrapper provides functions to simplify usage of Nillion's SecretVault and blindfold.
 
 
 Installation and Usage
@@ -46,7 +46,7 @@ The library can be imported in the usual ways:
 
 
 
-Standalone NilQLWrapper Example
+Standalone BlindfoldWrapper Example
 -------------------------------
 
 An example workflow that demonstrates use of the wrapper is presented below:
@@ -55,7 +55,7 @@ Run examples:
 
 .. code-block:: bash
 
-    python3 examples/nilql_encryption.py
+    python3 examples/blindfold_encryption.py
 
 SecretVaultWrapper Example
 ---------------------------
@@ -127,7 +127,7 @@ This library can be published as a `package on PyPI <https://pypi.org/project/se
 Ensure that any links in this README document to the Read the Docs documentation of this package (or its dependencies) have appropriate version numbers. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions.
 
 
-NilQLWrapper: Lightweight wrapper for encryption and decryption using nilQL
+BlindfoldWrapper: Lightweight wrapper for encryption and decryption using blindfold
 ============================================================================
 
 - Encrypts data into shares for distributed storage across nodes

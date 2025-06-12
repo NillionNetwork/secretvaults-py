@@ -1,11 +1,11 @@
-"""NilQLWrapper provides encryption and decryption of data using Nillion's technology."""
+"""BlindfoldWrapper provides encryption and decryption of data using Nillion's technology."""
 
 from enum import Enum
 from typing import Optional, Union, Sequence
 
-import nilql
+import blindfold
 
-NIQL_INIT_ERROR = "NilQLWrapper not initialized. Call init() first."
+NIQL_INIT_ERROR = "BlindfoldWrapper not initialized. Call init() first."
 
 
 class KeyType(str, Enum):
@@ -23,9 +23,9 @@ class OperationType(str, Enum):
     MATCH = "match"
 
 
-class NilQLWrapper:
+class BlindfoldWrapper:
     """
-    NilQLWrapper provides encryption and decryption of data using Nillion's technology.
+    BlindfoldWrapper provides encryption and decryption of data using Nillion's technology.
     It generates and manages secret keys, splits data into shares when encrypting,
     and recombines shares when decrypting.
 
@@ -40,7 +40,7 @@ class NilQLWrapper:
         self,
         cluster: dict,
         operation: str = OperationType.STORE,
-        secret_key: Optional[nilql.SecretKey] = None,
+        secret_key: Optional[blindfold.SecretKey] = None,
         secret_key_seed: Optional[str] = None,
         key_type: KeyType = KeyType.CLUSTER,
     ):
@@ -52,14 +52,14 @@ class NilQLWrapper:
 
         # Reforge the SecretKey from seed if provided
         if self.secret_key_seed and not self.secret_key:
-            self.secret_key = nilql.SecretKey.generate(self.cluster, self.operation, seed=self.secret_key_seed)
+            self.secret_key = blindfold.SecretKey.generate(self.cluster, self.operation, seed=self.secret_key_seed)
 
         # Initialize the appropriate key if not provided
         if self.secret_key is None:
             if self.key_type == KeyType.SECRET:
-                self.secret_key = nilql.SecretKey.generate(self.cluster, self.operation)
+                self.secret_key = blindfold.SecretKey.generate(self.cluster, self.operation)
             elif self.key_type == KeyType.CLUSTER:
-                self.secret_key = nilql.ClusterKey.generate(self.cluster, self.operation)
+                self.secret_key = blindfold.ClusterKey.generate(self.cluster, self.operation)
 
     async def encrypt(self, data: Union[int, str]) -> Union[str, Sequence[str], Sequence[int]]:
         """
@@ -81,7 +81,7 @@ class NilQLWrapper:
         if not self.secret_key:
             raise RuntimeError(NIQL_INIT_ERROR)
         try:
-            encrypted_shares = nilql.encrypt(self.secret_key, data)
+            encrypted_shares = blindfold.encrypt(self.secret_key, data)
             return list(encrypted_shares)
         except Exception as e:
             raise RuntimeError(f"Encryption failed: {str(e)}") from e
@@ -107,7 +107,7 @@ class NilQLWrapper:
         if not self.secret_key:
             raise RuntimeError(NIQL_INIT_ERROR)
         try:
-            decrypted_data = nilql.decrypt(self.secret_key, shares)
+            decrypted_data = blindfold.decrypt(self.secret_key, shares)
             return decrypted_data
         except Exception as e:
             raise RuntimeError(f"Decryption failed: {str(e)}") from e
@@ -174,7 +174,7 @@ class NilQLWrapper:
             return encrypted
 
         encrypted_data: Union[int, bool, str, list, dict] = await encrypt_deep(data)
-        return nilql.allot(encrypted_data)
+        return blindfold.allot(encrypted_data)
 
     async def unify(self, shares: Sequence[Union[int, bool, str, list, dict]]) -> Union[int, bool, str, list, dict]:
         """
@@ -198,4 +198,4 @@ class NilQLWrapper:
         if not self.secret_key:
             raise RuntimeError(NIQL_INIT_ERROR)
 
-        return nilql.unify(self.secret_key, shares)
+        return blindfold.unify(self.secret_key, shares)

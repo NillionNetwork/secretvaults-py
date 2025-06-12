@@ -8,7 +8,7 @@ from secretvaults import SecretVaultWrapper, OperationType
 from org_config import org_config
 
 # Update QUERY ID with your own value
-QUERY_ID = "8bc937fd-aca8-485b-89a9-886e507ce64b"
+QUERY_ID = "7099d476-8ec7-4c90-9252-b785079d45f7"
 
 # Define payload variables. In this example we are not using any.
 variables = {}

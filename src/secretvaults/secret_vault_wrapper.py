@@ -13,7 +13,7 @@ import aiohttp
 import jwt
 from ecdsa import SigningKey, SECP256k1
 
-from .nilql_wrapper import NilQLWrapper, OperationType, KeyType
+from .blindfold_wrapper import BlindfoldWrapper, OperationType, KeyType
 
 MAX_RECORD_SIZE_BYTES = 15 * 1024 * 1024  # 15 MB
 
@@ -22,7 +22,7 @@ MAX_RECORD_SIZE_BYTES = 15 * 1024 * 1024  # 15 MB
 class SecretVaultWrapper:
     """
     SecretVaultWrapper manages distributed data storage across multiple nodes.
-    It handles node authentication, data distribution, and uses NilQLWrapper
+    It handles node authentication, data distribution, and uses BlindfoldWrapper
     for field-level encryption. Provides CRUD operations with built-in
     security and error handling.
 
@@ -54,25 +54,25 @@ class SecretVaultWrapper:
         self.schema_id = schema_id
         self.operation = operation
         self.token_expiry_seconds = token_expiry_seconds
-        self.nilql_wrapper = None
+        self.blindfold_wrapper = None
         self.signer = None
         self.encryption_key_type = encryption_key_type
         self.encryption_secret_key = encryption_secret_key
         self.encryption_secret_key_seed = encryption_secret_key_seed
 
-    async def init(self) -> NilQLWrapper:
+    async def init(self) -> BlindfoldWrapper:
         """
         Initializes the SecretVaultWrapper:
          - Generates tokens for nodes.
-         - Instantiates and initializes NilQLWrapper with cluster configuration.
+         - Instantiates and initializes BlindfoldWrapper with cluster configuration.
 
         Returns:
-            NilQLWrapper: The initialized NilQLWrapper instance, configured with the cluster information
+            BlindfoldWrapper: The initialized BlindfoldWrapper instance, configured with the cluster information
                           and operation type, ready for use in encryption/decryption tasks.
 
         Raises:
             KeyError: If the required secret key is not found in the credentials.
-            Exception: If there is an issue generating the node tokens or initializing the NilQLWrapper.
+            Exception: If there is an issue generating the node tokens or initializing the BlindfoldWrapper.
 
         Example:
             await org.init()
@@ -87,15 +87,15 @@ class SecretVaultWrapper:
             node_configs.append({"url": node["url"], "jwt": token})
         self.nodes_jwt = node_configs
 
-        # Initiate the NilQLWrapper
-        self.nilql_wrapper = NilQLWrapper(
+        # Initiate the BlindfoldWrapper
+        self.blindfold_wrapper = BlindfoldWrapper(
             cluster={"nodes": self.nodes},
             operation=self.operation,
             key_type=self.encryption_key_type,
             secret_key=self.encryption_secret_key,
             secret_key_seed=self.encryption_secret_key_seed,
         )
-        return self.nilql_wrapper
+        return self.blindfold_wrapper
 
     async def generate_node_token(self, node_did: str) -> str:
         """
@@ -211,7 +211,7 @@ class SecretVaultWrapper:
             List[Any]: A list of transformed (e.g., encrypted) data items, ready for distribution.
 
         Raises:
-            RuntimeError: If the `NilQLWrapper` has not been initialized or if there is any error
+            RuntimeError: If the `BlindfoldWrapper` has not been initialized or if there is any error
                           during the transformation or encryption process.
 
         Example:
@@ -219,7 +219,7 @@ class SecretVaultWrapper:
         """
         encrypted_records = []
         for item in data:
-            encrypted_item = await self.nilql_wrapper.prepare_and_allot(item)
+            encrypted_item = await self.blindfold_wrapper.prepare_and_allot(item)
             encrypted_records.append(encrypted_item)
         return encrypted_records
 
@@ -578,7 +578,7 @@ class SecretVaultWrapper:
         # Recombine the shares to form the original records
         recombined_records = []
         for group in record_groups:
-            recombined = await self.nilql_wrapper.unify(group["shares"])
+            recombined = await self.blindfold_wrapper.unify(group["shares"])
             recombined_records.append(recombined)
 
         return recombined_records
@@ -861,7 +861,7 @@ class SecretVaultWrapper:
         # Recombine the shares to form the original records
         recombined_result = []
         for group in record_groups:
-            recombined = await self.nilql_wrapper.unify(group["shares"])
+            recombined = await self.blindfold_wrapper.unify(group["shares"])
             recombined_result.append(recombined)
 
         return recombined_result

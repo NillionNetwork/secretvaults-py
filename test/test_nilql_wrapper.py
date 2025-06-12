@@ -1,8 +1,8 @@
-"""Test suite for NilQLWrapper"""
+"""Test suite for BlindfoldWrapper"""
 
 import pytest
-import nilql
-from secretvaults import NilQLWrapper, OperationType, KeyType
+import blindfold
+from secretvaults import BlindfoldWrapper, OperationType, KeyType
 
 SEED = "my_seed"
 
@@ -15,42 +15,42 @@ def cluster_config():
 
 @pytest.fixture
 def wrapper_store(cluster_config):
-    """Fixture for NilQLWrapper with STORE operation."""
-    return NilQLWrapper(cluster_config, OperationType.STORE)
+    """Fixture for BlindfoldWrapper with STORE operation."""
+    return BlindfoldWrapper(cluster_config, OperationType.STORE)
 
 
 @pytest.fixture
 def wrapper_sum(cluster_config):
-    """Fixture for NilQLWrapper with SUM operation."""
-    return NilQLWrapper(cluster_config, OperationType.SUM)
+    """Fixture for BlindfoldWrapper with SUM operation."""
+    return BlindfoldWrapper(cluster_config, OperationType.SUM)
 
 
 @pytest.fixture
 def wrapper_match(cluster_config):
-    """Fixture for NilQLWrapper with MATCH operation."""
-    return NilQLWrapper(cluster_config, OperationType.MATCH.value)
+    """Fixture for BlindfoldWrapper with MATCH operation."""
+    return BlindfoldWrapper(cluster_config, OperationType.MATCH.value)
 
 
 def test_secret_key_initialization(wrapper_store, wrapper_sum, wrapper_match):
     """Test if secret key is properly generated."""
-    assert isinstance(wrapper_store.secret_key, nilql.SecretKey)
-    assert isinstance(wrapper_sum.secret_key, nilql.SecretKey)
-    assert isinstance(wrapper_match.secret_key, nilql.SecretKey)
+    assert isinstance(wrapper_store.secret_key, blindfold.SecretKey)
+    assert isinstance(wrapper_sum.secret_key, blindfold.SecretKey)
+    assert isinstance(wrapper_match.secret_key, blindfold.SecretKey)
 
 
 def test_secret_key_generation_with_seed(cluster_config):
     """Test secret key generation with a fixed seed."""
-    wrapper_with_seed = NilQLWrapper(cluster_config, OperationType.STORE, secret_key_seed=SEED)
-    assert isinstance(wrapper_with_seed.secret_key, nilql.SecretKey)
+    wrapper_with_seed = BlindfoldWrapper(cluster_config, OperationType.STORE, secret_key_seed=SEED)
+    assert isinstance(wrapper_with_seed.secret_key, blindfold.SecretKey)
 
 
 def test_invalid_secret_key_generation():
     """Test error handling during invalid secret key generation."""
     with pytest.raises(ValueError, match="valid cluster configuration is required"):
-        NilQLWrapper(cluster=123, operation=OperationType.STORE)
+        BlindfoldWrapper(cluster=123, operation=OperationType.STORE)
 
     with pytest.raises(ValueError, match="cluster configuration must contain at least one node"):
-        NilQLWrapper(cluster={"nodes": []}, operation=OperationType.STORE)
+        BlindfoldWrapper(cluster={"nodes": []}, operation=OperationType.STORE)
 
 
 def test_key_type_enum():
@@ -138,7 +138,7 @@ async def test_prepare_and_allot(wrapper_store):
 
     # Test missing secret key should raise RuntimeError
     wrapper_store.secret_key = None
-    with pytest.raises(RuntimeError, match="NilQLWrapper not initialized"):
+    with pytest.raises(RuntimeError, match="BlindfoldWrapper not initialized"):
         await wrapper_store.prepare_and_allot(data_dict)
 
 
@@ -154,21 +154,21 @@ async def test_unify(wrapper_store):
 
 @pytest.mark.asyncio
 async def test_uninitialized_wrapper_encrypt(cluster_config):
-    """Test error handling when encrypting with an uninitialized NilQLWrapper."""
-    uninitialized_wrapper = NilQLWrapper(cluster_config)
+    """Test error handling when encrypting with an uninitialized BlindfoldWrapper."""
+    uninitialized_wrapper = BlindfoldWrapper(cluster_config)
     uninitialized_wrapper.secret_key = None
 
-    with pytest.raises(RuntimeError, match="NilQLWrapper not initialized"):
+    with pytest.raises(RuntimeError, match="BlindfoldWrapper not initialized"):
         await uninitialized_wrapper.encrypt("test")
 
 
 @pytest.mark.asyncio
 async def test_uninitialized_wrapper_decrypt(cluster_config):
-    """Test error handling when decrypting with an uninitialized NilQLWrapper."""
-    uninitialized_wrapper = NilQLWrapper(cluster_config)
+    """Test error handling when decrypting with an uninitialized BlindfoldWrapper."""
+    uninitialized_wrapper = BlindfoldWrapper(cluster_config)
     uninitialized_wrapper.secret_key = None
 
-    with pytest.raises(RuntimeError, match="NilQLWrapper not initialized"):
+    with pytest.raises(RuntimeError, match="BlindfoldWrapper not initialized"):
         await uninitialized_wrapper.decrypt(["encrypted_data"])
 
 
