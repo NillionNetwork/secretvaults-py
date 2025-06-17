@@ -23,12 +23,7 @@
             "$project": {
               "_id": 0,
               "sum_years_in_web3": {
-                "%share": {
-                  "$mod": [
-                    "$total_years",
-                    { "$add": [{ "$pow": [2, 32] }, 15] }
-                  ]
-                }
+                "%share": "$total_years"
               },
               "user_count": "$count"
             }
