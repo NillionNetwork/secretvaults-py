@@ -1,4 +1,19 @@
-"""Allow users to access the functions directly."""
+"""
+SecretVaults Python Client
 
-from .nilql_wrapper import NilQLWrapper, OperationType, KeyType
-from .secret_vault_wrapper import SecretVaultWrapper
+A client for interacting with nillion's nildb blind module.
+"""
+
+from .base import SecretVaultBaseClient, SecretVaultBaseOptions
+from .builder import SecretVaultBuilderClient, SecretVaultBuilderOptions
+from .user import SecretVaultUserClient, SecretVaultUserOptions
+
+__version__ = "0.1.1"
+__all__ = [
+    "SecretVaultBaseClient",
+    "SecretVaultBaseOptions",
+    "SecretVaultBuilderClient",
+    "SecretVaultBuilderOptions",
+    "SecretVaultUserClient",
+    "SecretVaultUserOptions",
+]

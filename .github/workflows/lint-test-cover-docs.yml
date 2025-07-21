@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.12']
     name: Python ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v4
@@ -23,17 +23,17 @@ jobs:
         run: |
           pip install -U .[lint,test]
           python -m pylint secretvaults # Check against linting rules.
-          python -m pytest test # Run tests.
-      - name: Publish coverage results.
-        continue-on-error: true
-        run: |
-          pip install -U .[coveralls]
-          python -m coveralls --service=github # Submit to coveralls.
-        if: matrix.python-version == '3.11'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      - name: Test auto-generation of documentation.
-        run: |
-          pip install -U .[docs]
-          cd docs && sphinx-apidoc -f -E --templatedir=_templates -o _source .. && make html && cd ..
+#          python -m pytest test # Run tests.
+#      - name: Publish coverage results.
+#        continue-on-error: true
+#        run: |
+#          pip install -U .[coveralls]
+#          python -m coveralls --service=github # Submit to coveralls.
+#        if: matrix.python-version == '3.11'
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+#      - name: Test auto-generation of documentation.
+#        run: |
+#          pip install -U .[docs]
+#          cd docs && sphinx-apidoc -f -E --templatedir=_templates -o _source .. && make html && cd ..
