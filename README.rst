@@ -3,7 +3,7 @@ secretvaults
 
 A set of tools for interacting with Nillion's Private Storage.
 
-|pypi| |readthedocs| |actions| |coveralls|
+|pypi| |actions|
 
 .. |pypi| image:: https://badge.fury.io/py/secretvaults.svg
    :target: https://badge.fury.io/py/secretvaults
@@ -104,4 +104,3 @@ Publishing
 
 This library can be published as a `package on PyPI <https://pypi.org/project/secretvaults>`__ via the GitHub Actions workflow found in ``.github/workflows/build-publish-sign-release.yml`` that follows the `recommendations found in the Python Packaging User Guide <https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/>`__.
 
-Ensure that any links in this README document to the Read the Docs documentation of this package (or its dependencies) have appropriate version numbers. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions.
