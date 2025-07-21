@@ -1782,7 +1782,7 @@ async def create_owned_data(builder_client: SecretVaultBuilderClient, user_clien
 
         print(f"✅ Delegation token created successfully!")
         print(f"   Audience: {user_client.id}")
-        print(f"   Expires: 1 hour from now")
+        print(f"   Expires: 1 minute from now")
 
         # Create user data
         user_data = {"_id": str(uuid.uuid4()), "name": "User owned Item 1", "country_code": {"%allot": "US"}}
