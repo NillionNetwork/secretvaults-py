@@ -29,9 +29,15 @@ from secretvaults.dto.common import Name
 # Load .env file
 load_dotenv()
 
+
 def check_environment():
     """Check if all required environment variables are present"""
-    required_vars = ["BUILDER_PRIVATE_KEY", "NILCHAIN_URL", "NILAUTH_URL", "NILDB_NODES"]
+    required_vars = [
+        "BUILDER_PRIVATE_KEY",
+        "NILCHAIN_URL",
+        "NILAUTH_URL",
+        "NILDB_NODES",
+    ]
 
     missing_vars = []
     for var in required_vars:
@@ -49,8 +55,10 @@ def check_environment():
 
     return True
 
+
 # Hardcoded grantee DID for grant/revoke
 GRANTEE_DID = "did:nil:03d2312cb24fb2664a2a770fd72e7d83ffbc5a96d6b2308b1b0801ccbc5d20ecb5"
+
 
 async def main():  # pylint: disable=too-many-locals,too-many-statements
     """Owned data SecretVault builder workflow example"""
@@ -61,7 +69,7 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
         "BUILDER_PRIVATE_KEY": os.getenv("BUILDER_PRIVATE_KEY"),
         "NILCHAIN_URL": os.getenv("NILCHAIN_URL"),
         "NILAUTH_URL": os.getenv("NILAUTH_URL"),
-        "NILDB_NODES": os.getenv("NILDB_NODES", "").split(",")
+        "NILDB_NODES": os.getenv("NILDB_NODES", "").split(","),
     }
 
     # Step 1: Register builder
@@ -70,7 +78,7 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
     urls = {
         "chain": [config["NILCHAIN_URL"]],
         "auth": config["NILAUTH_URL"],
-        "dbs": config["NILDB_NODES"]
+        "dbs": config["NILDB_NODES"],
     }
 
     with open("examples/data/collection.json", "r", encoding="utf-8") as f:  # Load the standard collection schema
@@ -81,20 +89,19 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
         urls=urls,
         blindfold=BlindfoldFactoryConfig(
             operation=BlindfoldOperation.STORE,
-            use_cluster_key=True
-        )
+            use_cluster_key=True,
+        ),
     ) as builder_client:
         await builder_client.refresh_root_token()
         try:
             register_request = RegisterBuilderRequest(
-                did=builder_client.keypair.to_did_string(),
-                name=Name("owned-data-example-builder")
+                did=builder_client.keypair.to_did_string(), name=Name("owned-data-example-builder")
             )
             register_response = await builder_client.register(register_request)
-            if hasattr(register_response, 'root'):
+            if hasattr(register_response, "root"):
                 has_errors = False
                 for node_id, response in register_response.root.items():  # pylint: disable=unused-variable
-                    if hasattr(response, 'status') and response.status != 201:
+                    if hasattr(response, "status") and response.status != 201:
                         has_errors = True
                         break
                 if has_errors:
@@ -114,7 +121,7 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
             id=collection_id,
             type="owned",
             name="owned_collection_demo",
-            schema=schema_data["schema"]
+            schema=schema_data["schema"],
         )
         await builder_client.create_collection(collection_request)
         print(f"✅ Owned collection created: {collection_id}")
@@ -127,8 +134,8 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
             base_urls=config["NILDB_NODES"],
             blindfold=BlindfoldFactoryConfig(
                 operation=BlindfoldOperation.STORE,
-                use_cluster_key=True
-            )
+                use_cluster_key=True,
+            ),
         )
         try:
             print(f"✅ User DID: {user_keypair.to_did_string()}")
@@ -140,20 +147,16 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
             root_token_envelope = builder_client.root_token
 
             # Mint a delegation token from builder to user for this collection
-            delegation_token = (NucTokenBuilder.extending(root_token_envelope)
-                    .command(Command(NucCmd.NIL_DB_DATA_CREATE.value.split('.')))
-                    .audience(user_client.id)
-                    .expires_at(datetime.fromtimestamp(into_seconds_from_now(60)))
-                    .build(builder_client.keypair.private_key()))
+            delegation_token = (
+                NucTokenBuilder.extending(root_token_envelope)
+                .command(Command(NucCmd.NIL_DB_DATA_CREATE.value.split(".")))
+                .audience(user_client.id)
+                .expires_at(datetime.fromtimestamp(into_seconds_from_now(60)))
+                .build(builder_client.keypair.private_key())
+            )
 
             # Create user data
-            user_data = {
-                "_id": str(uuid.uuid4()),
-                "name": "User owned Item 1",
-                "country_code": {
-                        "%allot": "US"
-                    }
-            }
+            user_data = {"name": "User owned Item 1", "country_code": {"%allot": "US"}}
 
             print("\n📝 Creating data entry")
 
@@ -169,17 +172,17 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
                     grantee=builder_client.keypair.to_did_string(),
                     read=True,
                     write=False,
-                    execute=True
-                )
+                    execute=True,
+                ),
             )
             create_response = await user_client.create_data(
                 delegation=delegation_token,
-                body=create_data_request
+                body=create_data_request,
             )
             # Get the document ID
             doc_id = None
             for node_result in create_response.values():
-                if hasattr(node_result, 'data') and hasattr(node_result.data, 'created') and node_result.data.created:
+                if hasattr(node_result, "data") and hasattr(node_result.data, "created") and node_result.data.created:
                     doc_id = node_result.data.created[0]
                     break
             if not doc_id:
@@ -193,9 +196,9 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
             grant_request = GrantAccessToDataRequest(
                 collection=collection_id,
                 document=doc_id,
-                acl=acl
+                acl=acl,
             )
-            grant_response = await user_client.grant_access(grant_request)  # pylint: disable=unused-variable
+            await user_client.grant_access(grant_request)
             print(f"✅ Granted access to {GRANTEE_DID}")
 
             # Step 5: Revoke access from the same grantee DID
@@ -203,12 +206,13 @@ async def main():  # pylint: disable=too-many-locals,too-many-statements
             revoke_request = RevokeAccessToDataRequest(
                 grantee=GRANTEE_DID,
                 collection=collection_id,
-                document=doc_id
+                document=doc_id,
             )
-            revoke_response = await user_client.revoke_access(revoke_request)  # pylint: disable=unused-variable
+            await user_client.revoke_access(revoke_request)
             print(f"✅ Revoked access from {GRANTEE_DID}")
         finally:
             await user_client.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

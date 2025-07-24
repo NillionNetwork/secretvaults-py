@@ -11,12 +11,14 @@ from ..common.types import Did
 
 class RegisterBuilderRequest(BaseModel):
     """Request model for registering a new builder."""
+
     did: Did
     name: Name
 
 
 class BuilderProfileDto(BaseModel):
     """Profile information for a builder, including collections and queries."""
+
     id: Did = Field(alias="_id")
     created: datetime = Field(alias="_created")
     updated: datetime = Field(alias="_updated")
@@ -35,10 +37,12 @@ class BuilderProfileDto(BaseModel):
 
 class ReadBuilderProfileResponse(BaseModel):
     """Response model for reading a builder's profile."""
+
     success: bool = True
     data: BuilderProfileDto
 
 
 class UpdateBuilderProfileRequest(BaseModel):
     """Request model for updating a builder's profile name."""
+
     name: Name

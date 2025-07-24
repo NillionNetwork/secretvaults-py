@@ -14,7 +14,7 @@ from nuc.token import Command, InvocationBody
 from .base import SecretVaultBaseClient, SecretVaultBaseOptions
 from .common.blindfold import BlindfoldFactoryConfig, to_blindfold_key
 from .common.keypair import Keypair
-from .common.utils import into_seconds_from_now
+from .common.utils import into_seconds_from_now, inject_ids_into_records
 from .common.cluster import (
     execute_on_cluster,
     prepare_concealed_request,
@@ -320,12 +320,12 @@ class SecretVaultBuilderClient(SecretVaultBaseClient[NilDbBuilderClient]):  # py
         self, body: CreateStandardDataRequest, delegation: Optional[str] = None
     ) -> Dict[Did, CreateDataResponse]:
         """Creates standard data on all nodes."""
-        # Prepare request payloads
+        create_body = inject_ids_into_records(body)
 
         node_payloads = (
-            await prepare_concealed_request({"key": self._options.key, "clients": self.nodes, "body": body})
+            await prepare_concealed_request({"key": self._options.key, "clients": self.nodes, "body": create_body})
             if self._options.key
-            else prepare_plaintext_request({"clients": self.nodes, "body": body})
+            else prepare_plaintext_request({"clients": self.nodes, "body": create_body})
         )
 
         # Execute on all nodes
