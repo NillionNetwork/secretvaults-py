@@ -112,6 +112,8 @@ async def prepare_concealed_request(options: Dict[str, Any]) -> Dict[Did, Any]:
 
         # Ensure the number of shares matches the number of clients/nodes.
         if len(concealed_docs[0]) != len(clients):
+            if len(concealed_docs[0]) == 1:
+                return prepare_plaintext_request(options)
             Log.error(
                 "Concealed shares count mismatch",
                 shares=len(concealed_docs[0]) if concealed_docs else 0,

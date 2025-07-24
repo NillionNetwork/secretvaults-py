@@ -10,7 +10,7 @@ from nuc.builder import NucTokenBuilder
 from nuc.token import Command, Did, InvocationBody
 from nuc.envelope import NucTokenEnvelope
 from .common.keypair import Keypair
-from .common.utils import into_seconds_from_now
+from .common.utils import into_seconds_from_now, inject_ids_into_records
 
 from .base import SecretVaultBaseClient, SecretVaultBaseOptions
 from .common.blindfold import BlindfoldFactoryConfig, to_blindfold_key
@@ -124,14 +124,16 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
 
     async def create_data(self, delegation: str, body: CreateOwnedDataRequest) -> Dict[Did, CreateDataResponse]:
         """Creates one or more data documents owned by the user."""
+        create_body = inject_ids_into_records(body)
+
         key = self._options.key
         clients = self.nodes
 
         # Prepare map of node-id to node-specific payload
         node_payloads = (
-            await prepare_concealed_request({"key": key, "clients": clients, "body": body})
+            await prepare_concealed_request({"key": key, "clients": clients, "body": create_body})
             if key
-            else prepare_plaintext_request({"clients": clients, "body": body})
+            else prepare_plaintext_request({"clients": clients, "body": create_body})
         )
 
         # Execute on all nodes
@@ -190,7 +192,9 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
         )
         return result
 
-    async def read_data(self, params: ReadDataRequestParams) -> ReadDataResponse:  # pylint: disable=too-many-locals,too-many-branches
+    async def read_data(  # pylint: disable=too-many-locals,too-many-branches
+        self, params: ReadDataRequestParams
+    ) -> ReadDataResponse:
         """Reads a single data document, automatically revealing concealed values if a key is configured."""
         # Fetch the raw data from all nodes
         results_by_node = await execute_on_cluster(

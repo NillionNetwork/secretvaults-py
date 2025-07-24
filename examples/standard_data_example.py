@@ -29,7 +29,12 @@ load_dotenv()
 
 def check_environment():
     """Check if all required environment variables are present"""
-    required_vars = ["BUILDER_PRIVATE_KEY", "NILCHAIN_URL", "NILAUTH_URL", "NILDB_NODES"]
+    required_vars = [
+        "BUILDER_PRIVATE_KEY",
+        "NILCHAIN_URL",
+        "NILAUTH_URL",
+        "NILDB_NODES",
+    ]
 
     missing_vars = []
     for var in required_vars:
@@ -73,7 +78,11 @@ async def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-
 
     # Step 2: Prepare URLs for the builder client
     print("\n2️⃣ Preparing client configuration...")
-    urls = {"chain": [config["NILCHAIN_URL"]], "auth": config["NILAUTH_URL"], "dbs": config["NILDB_NODES"]}
+    urls = {
+        "chain": [config["NILCHAIN_URL"]],
+        "auth": config["NILAUTH_URL"],
+        "dbs": config["NILDB_NODES"],
+    }
     print(f"✅ Configured {len(urls['dbs'])} database nodes")
 
     # Step 3: Create SecretVaultBuilderClient with blindfold encryption
@@ -81,7 +90,10 @@ async def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-
     async with await SecretVaultBuilderClient.from_options(
         keypair=keypair,
         urls=urls,
-        blindfold=BlindfoldFactoryConfig(operation=BlindfoldOperation.STORE, use_cluster_key=True),
+        blindfold=BlindfoldFactoryConfig(
+            operation=BlindfoldOperation.STORE,
+            use_cluster_key=True,
+        ),
     ) as builder_client:
 
         # Step 4: Initialize with root token
@@ -178,7 +190,6 @@ async def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-
 
             create_data_request = CreateStandardDataRequest(collection=collection_id, data=sample_data)
 
-            # data_response = await builder_client.create_standard_data(create_data_request)  # Unused variable
             await builder_client.create_standard_data(create_data_request)
             print(f"✅ Created {len(sample_data)} data records")
 

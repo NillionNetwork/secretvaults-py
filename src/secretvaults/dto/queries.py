@@ -16,12 +16,14 @@ VariablePath = constr(pattern=PATH_EXPRESSION)
 
 class QueryVariableValidator(BaseModel):
     """Validator for query variables, specifying the path and optional description."""
+
     path: VariablePath
     description: Optional[str] = None
 
 
 class CreateQueryRequest(BaseModel):
     """Request model for creating a new query."""
+
     id: Uuid = Field(alias="_id")
     collection: Uuid
     name: str
@@ -39,6 +41,7 @@ class CreateQueryRequest(BaseModel):
 
 class QueryDocumentResponse(BaseModel):
     """A summary of a query, including its ID, name, and collection."""
+
     id: Uuid = Field(alias="_id")
     name: str
     collection: Uuid
@@ -46,32 +49,38 @@ class QueryDocumentResponse(BaseModel):
 
 class ReadQueriesResponse(BaseModel):
     """Response model for listing all queries."""
+
     data: List[QueryDocumentResponse]
 
 
 class ReadQueryResponse(BaseModel):
     """Response model for reading a single query."""
+
     data: QueryDocumentResponse
 
 
 class DeleteQueryRequest(BaseModel):
     """Request model for deleting a query by ID."""
+
     id: Uuid
 
 
 class RunQueryRequest(BaseModel):
     """Request model for running a query with variables."""
+
     id: Uuid = Field(alias="_id")
     variables: Dict[str, Any]
 
 
 class RunQueryResponse(BaseModel):
     """Response model for running a query, returning the result ID."""
+
     data: Uuid
 
 
 class RunQueryResultStatus(str, Enum):
     """Status values for a query run result."""
+
     pending = "pending"  # pylint: disable=invalid-name
     running = "running"  # pylint: disable=invalid-name
     complete = "complete"  # pylint: disable=invalid-name
@@ -80,6 +89,7 @@ class RunQueryResultStatus(str, Enum):
 
 class ReadQueryRunByIdDto(BaseModel):
     """Details of a query run, including status, result, and errors."""
+
     id: Uuid = Field(alias="_id")
     query: Uuid
     status: RunQueryResultStatus
@@ -91,4 +101,5 @@ class ReadQueryRunByIdDto(BaseModel):
 
 class ReadQueryRunByIdResponse(BaseModel):
     """Response model for reading a query run by ID."""
+
     data: ReadQueryRunByIdDto
