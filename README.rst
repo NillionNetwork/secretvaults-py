@@ -1,7 +1,7 @@
 secretvaults
 =============
 
-A set of tools for interacting with Nillion's Private Storage.
+SDK for interacting with Nillion's `Private Storage <https://docs.nillion.com/build/private-storage/overview>`__ solutions.
 
 |pypi| |actions|
 

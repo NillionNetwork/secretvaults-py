@@ -1,7 +1,7 @@
 [project]
 name = "secretvaults"
-version = "0.1.2"
-description = "A set of tools for interacting with Nillion's Private Storages"
+version = "0.2.0"
+description = "SDK for interacting with Nillion's Private Storage solutions."
 readme = "README.rst"
 license = {text = "MIT"}
 requires-python = ">=3.12"
@@ -43,6 +43,7 @@ build-backend = "setuptools.build_meta"
 
 [project.urls]
 Repository = "https://github.com/NillionNetwork/secretvaults-py"
+Documentation = "https://secretvaults.readthedocs.io"
 
 [tool.setuptools.packages.find]
 where = ["src"]
