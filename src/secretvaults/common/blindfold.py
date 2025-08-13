@@ -170,24 +170,26 @@ async def conceal(
         Array of secret shares, one per node
 
     Example:
-        data = [{
-            "patientId": {"%allot": "user-123"},  # This value will be concealed
-            "visitDate": "2025-06-24",            # This value will remain public
-        }]
+        .. code-block:: python
 
-        # Output assuming 2 nodes:
-        [
-            # Document to be stored on Node 1
-            {
-                "patientId": {"%share": "<ciphertext_a_for_user-123>"},
-                "visitDate": "2025-06-24",
-            },
-            # Document to be stored on Node 2
-            {
-                "patientId": {"%share": "<ciphertext_b_for_user-123>"},
-                "visitDate": "2025-06-24",
-            },
-        ]
+            data = [{
+                "patientId": {"%allot": "user-123"},  # This value will be concealed
+                "visitDate": "2025-06-24",            # This value will remain public
+            }]
+
+            # Output assuming 2 nodes:
+            [
+                # Document to be stored on Node 1
+                {
+                    "patientId": {"%share": "<ciphertext_a_for_user-123>"},
+                    "visitDate": "2025-06-24",
+                },
+                # Document to be stored on Node 2
+                {
+                    "patientId": {"%share": "<ciphertext_b_for_user-123>"},
+                    "visitDate": "2025-06-24",
+                },
+            ]
     """
     Log.debug(
         {
@@ -271,22 +273,24 @@ async def reveal(
         Original data with concealed values revealed
 
     Example:
-        shares = [
-            {
-                "patientId": {"%share": "<ciphertext_A_for_user-123>"},
-                "visitDate": "2025-06-24",
-            },
-            {
-                "patientId": {"%share": "<ciphertext_B_for_user-123>"},
-                "visitDate": "2025-06-24",
-            },
-        ]
+        .. code-block:: python
 
-        # Output:
-        {
-            "patientId": "user-123",
-            "visitDate": "2025-06-24",
-        }
+            shares = [
+                {
+                    "patientId": {"%share": "<ciphertext_A_for_user-123>"},
+                    "visitDate": "2025-06-24",
+                },
+                {
+                    "patientId": {"%share": "<ciphertext_B_for_user-123>"},
+                    "visitDate": "2025-06-24",
+                },
+            ]
+
+            # Output:
+            {
+                "patientId": "user-123",
+                "visitDate": "2025-06-24",
+            }
     """
     unified = await unify(key, shares)
 
