@@ -285,14 +285,14 @@ class SecretVaultBuilderClient(SecretVaultBaseClient[NilDbBuilderClient]):  # py
             lambda client: client.create_collection_index(
                 self._mint_root_invocation(
                     audience=client.id,
-                    command=NucCmd.NIL_DB_COLLECTIONS_INDEX_CREATE,
+                    command=NucCmd.NIL_DB_COLLECTIONS_UPDATE,
                 ),
                 collection,
                 body,
             ),
         )
         Log.info(
-            {"builder": self.id, "collection": collection, "index": body.field},
+            {"builder": self.id, "collection": collection, "index": body},
             "Collection index created",
         )
         return result
@@ -304,7 +304,7 @@ class SecretVaultBuilderClient(SecretVaultBaseClient[NilDbBuilderClient]):  # py
             lambda client: client.drop_collection_index(
                 self._mint_root_invocation(
                     audience=client.id,
-                    command=NucCmd.NIL_DB_COLLECTIONS_INDEX_DROP,
+                    command=NucCmd.NIL_DB_COLLECTIONS_UPDATE,
                 ),
                 collection,
                 index,
