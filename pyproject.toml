@@ -1,6 +1,6 @@
 [project]
 name = "secretvaults"
-version = "0.2.0"
+version = "0.2.1"
 description = "SDK for interacting with Nillion's Private Storage solutions."
 readme = "README.rst"
 license = {text = "MIT"}

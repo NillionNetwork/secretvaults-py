@@ -53,7 +53,7 @@ class CreateCollectionIndexRequest(BaseModel):
     name: constr(min_length=4)
     keys: List[Dict[str, Literal[1, -1]]]
     unique: bool
-    ttl: Optional[float] = None
+    ttl: Optional[float] = 0
 
 
 class CollectionIndexDto(BaseModel):

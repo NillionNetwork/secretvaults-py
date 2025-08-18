@@ -2,8 +2,7 @@
 Structured logging configuration for SecretVaults.
 """
 
-import os
-
+import logging
 import structlog
 
 
@@ -17,13 +16,8 @@ def configure_logging() -> None:
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
+        structlog.processors.JSONRenderer(),
     ]
-
-    # Add console output for development
-    if os.getenv("NODE_ENV") != "production":
-        processors.append(structlog.dev.ConsoleRenderer())
-    else:
-        processors.append(structlog.processors.JSONRenderer())
 
     structlog.configure(
         processors=processors,
@@ -33,31 +27,33 @@ def configure_logging() -> None:
         cache_logger_on_first_use=True,
     )
 
+    # Set a handler and a default level
+    logging.basicConfig(level=logging.ERROR)
+
 
 # Configure logging on module import
 configure_logging()
-
-# Create the main logger
 Log = structlog.get_logger()
 
 
 def set_log_level(level: str) -> None:
-    """Set the log level."""
+    """Set the structlog/stdlib log level."""
     valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     if level.upper() not in valid_levels:
         Log.warning(f"Invalid log level: {level}. Ignoring.")
         return
 
-    # This would need to be implemented based on your logging setup
+    logging.getLogger().setLevel(getattr(logging, level.upper()))
     Log.info(f"Log level set to {level}")
 
 
 def get_log_level() -> str:
-    """Get the current log level."""
-    # This would need to be implemented based on your logging setup
-    return "INFO"
+    """Get the current structlog/stdlib log level."""
+    level = logging.getLogger().getEffectiveLevel()
+    return logging.getLevelName(level)
 
 
 def clear_stored_log_level() -> None:
-    """Clear any stored log level configuration."""
-    # This would need to be implemented based on your logging setup
+    """Reset to default INFO level."""
+    logging.getLogger().setLevel(logging.ERROR)
+    Log.info("Log level reset to INFO")
