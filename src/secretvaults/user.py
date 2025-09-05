@@ -203,6 +203,7 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
                 self._mint_invocation(
                     command=NucCmd.NIL_DB_USERS_READ,
                     audience=client.id,
+                    subject=Did.parse(params.subject) if params.subject else None,
                 ),
                 params,
             ),
@@ -386,7 +387,7 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
             if hasattr(node, "close") and callable(getattr(node, "close")):
                 await node.close()
 
-    def _mint_invocation(self, command: NucCmd, audience: Did) -> str:
+    def _mint_invocation(self, command: NucCmd, audience: Did, subject: Optional[Did] = None) -> str:
         """Mints an invocation token for user operations.
 
         Args:
@@ -402,7 +403,7 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
         # Build the token with all required parameters
         token = (
             builder.command(Command(command.value.split(".")))
-            .subject(self.id)  # User's DID as subject
+            .subject(subject if subject else self.id)  # User's DID as subject
             .audience(audience)  # Target node's DID
             .expires_at(datetime.fromtimestamp(into_seconds_from_now(60)))
             .build(self.keypair.private_key())
