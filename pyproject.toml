@@ -7,7 +7,7 @@ license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "aiohttp>=3.8.0",
-    "blindfold>=0.1.0rc0",
+    "blindfold~=0.1.0",
     "nuc>=0.1.0",
     "pydantic>=2.0.0",
     "structlog>=23.0.0",
