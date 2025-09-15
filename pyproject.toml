@@ -4,7 +4,7 @@ version = "0.3.0"
 description = "SDK for interacting with Nillion's Private Storage solutions."
 readme = "README.rst"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "aiohttp>=3.8.0",
     "blindfold>=0.1.0rc0",
