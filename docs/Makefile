@@ -18,4 +18,8 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	rm _source/modules.rst
+	rm _source/secretvaults.rst
+	rm _source/secretvaults.common.rst
+	rm _source/secretvaults.dto.rst
+	rm _source/secretvaults.nildb.rst
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

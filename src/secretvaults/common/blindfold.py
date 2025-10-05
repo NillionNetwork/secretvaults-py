@@ -38,7 +38,7 @@ class BlindfoldFactoryConfig:  # pylint: disable=too-few-public-methods
         seed: Optional[Union[bytes, str]] = None,
         use_cluster_key: Optional[bool] = None,
         threshold: Optional[int] = None,
-    ):  # pylint: disable=too-many-arguments
+    ):  # pylint: disable=too-many-positional-arguments
         # Validate configuration based on scenarios
         if key is not None:
             # Scenario 1: Use pre-existing key

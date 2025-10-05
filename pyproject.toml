@@ -1,13 +1,13 @@
 [project]
 name = "secretvaults"
-version = "0.2.1"
+version = "0.3.0"
 description = "SDK for interacting with Nillion's Private Storage solutions."
 readme = "README.rst"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "aiohttp>=3.8.0",
-    "blindfold>=0.1.0rc0",
+    "blindfold~=0.1.0",
     "nuc>=0.1.0",
     "pydantic>=2.0.0",
     "structlog>=23.0.0",
@@ -17,16 +17,16 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "toml~=0.10.2",
-    "sphinx~=5.0",
-    "sphinx-rtd-theme~=2.0.0"
+    "sphinx~=7.4",
+    "sphinx-rtd-theme~=3.0"
 ]
 test = [
-    "pytest~=8.2",
-    "pytest-cov~=5.0",
+    "pytest~=8.4",
+    "pytest-cov~=7.0",
     "pytest-asyncio~=0.25.3"
 ]
 lint = [
-    "pylint~=3.2.0",
+    "pylint~=3.3.0",
     "black>=23.0.0"
 ]
 coveralls = [
@@ -38,7 +38,9 @@ publish = [
 ]
 
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = [
+    "setuptools>=77.0"
+]
 build-backend = "setuptools.build_meta"
 
 [project.urls]

@@ -13,6 +13,10 @@ set BUILDDIR=_build
 if "%1" == "" goto help
 
 del _source\modules.rst
+del _source\secretvaults.rst
+del _source\secretvaults.common.rst
+del _source\secretvaults.dto.rst
+del _source\secretvaults.nildb.rst
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
 	echo.
