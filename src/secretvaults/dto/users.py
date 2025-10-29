@@ -53,6 +53,7 @@ class ReadDataRequestParams(BaseModel):
 
     collection: Uuid
     document: Uuid
+    subject: Optional[Uuid] = None
 
 
 class OwnedDataDto(BaseModel, extra=Extra.allow):
