@@ -8,7 +8,8 @@ and ByNodeName for consistent type checking across the codebase.
 import warnings
 from typing import Dict, TypeVar, NewType
 
-from pydantic import RootModel, BaseModel, Field, field_validator
+from pydantic import RootModel, GetCoreSchemaHandler
+from pydantic_core import core_schema
 
 # Type aliases
 Uuid = NewType("Uuid", str)
@@ -70,64 +71,60 @@ def convert_did_key_to_did_nil(did_key: str) -> str:
         raise ValueError(f"Failed to convert did:key to did:nil: {e}") from e
 
 
-class Did(BaseModel):
+def validate_did_string(v: str) -> str:
+    """Validate and convert DID string."""
+    if not v.startswith("did:"):
+        raise ValueError("DID must start with 'did:'")
+
+    if v.startswith("did:ethr:"):
+        # Warn about ethr support but don't fail validation
+        warnings.warn(
+            "Received `did:ethr` which is not compatible with this version of secretvaults — upgrade to 1.0.0+.",
+            UserWarning,
+        )
+        return v
+
+    if v.startswith("did:nil:"):
+        return v
+
+    if v.startswith("did:key:"):
+        # Validate format
+        multibase_key = v[8:]  # Remove "did:key:"
+        if not multibase_key or len(multibase_key) < 10:
+            raise ValueError("Invalid did:key format - key portion too short")
+
+        # Convert to did:nil
+        try:
+            return convert_did_key_to_did_nil(v)
+        except Exception as e:
+            raise ValueError(f"Invalid did:key format: {e}") from e
+
+    # Unsupported DID method
+    raise ValueError(f"Unsupported DID method. Expected did:nil, did:key, or did:ethr, but got: {v[:10]}...")
+
+
+class Did(str):
     """
     Decentralized Identifier (DID) for Nillion network.
 
-    A branded type that loosely validates DIDs. Supports did:nil, did:key, and did:ethr formats.
+    A branded string type that loosely validates DIDs. Supports did:nil, did:key, and did:ethr formats.
     Automatically converts did:key to did:nil for backwards compatibility.
     """
 
-    value: str = Field(..., min_length=1)
+    def __new__(cls, value: str) -> "Did":
+        """Create a new Did instance with validation and conversion."""
+        validated_value = validate_did_string(value)
+        instance = super().__new__(cls, validated_value)
+        return instance
 
-    @field_validator("value")
     @classmethod
-    def validate_did(cls, v: str) -> str:
-        """Validate and convert DID string."""
-        if not v.startswith("did:"):
-            raise ValueError("DID must start with 'did:'")
-
-        if v.startswith("did:ethr:"):
-            # Warn about ethr support but don't fail validation
-            warnings.warn(
-                "Received `did:ethr` which is not compatible with this version of secretvaults — upgrade to 1.0.0+.",
-                UserWarning,
-            )
-            return v
-
-        if v.startswith("did:nil:"):
-            return v
-
-        if v.startswith("did:key:"):
-            # Validate format
-            multibase_key = v[8:]  # Remove "did:key:"
-            if not multibase_key or len(multibase_key) < 10:
-                raise ValueError("Invalid did:key format - key portion too short")
-
-            # Convert to did:nil
-            try:
-                return convert_did_key_to_did_nil(v)
-            except Exception as e:
-                raise ValueError(f"Invalid did:key format: {e}") from e
-
-        # Unsupported DID method
-        raise ValueError(f"Unsupported DID method. Expected did:nil, did:key, or did:ethr, but got: {v[:10]}...")
-
-    def __str__(self) -> str:
-        return self.value
-
-    def __repr__(self) -> str:
-        return f"Did(value='{self.value}')"
-
-    def __hash__(self) -> int:
-        return hash(self.value)
-
-    def __eq__(self, other) -> bool:
-        if isinstance(other, Did):
-            return self.value == other.value
-        if isinstance(other, str):
-            return self.value == other
-        return False
+    def __get_pydantic_core_schema__(
+        cls, _source_type: type, _handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        """Custom Pydantic core schema to handle DID validation and conversion."""
+        return core_schema.no_info_plain_validator_function(
+            lambda v: cls(validate_did_string(v))
+        )
 
 
 # Type variable for ByNodeName
