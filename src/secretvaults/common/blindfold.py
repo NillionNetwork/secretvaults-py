@@ -55,12 +55,12 @@ class BlindfoldFactoryConfig:  # pylint: disable=too-few-public-methods
                 # Scenario 3: Generate ClusterKey (disallows seed)
                 if seed is not None:
                     raise ValueError("ClusterKey generation does not allow seed")
-                if operation == BlindfoldOperation.SUM and threshold is None:
-                    raise ValueError("SUM operation requires threshold for ClusterKey")
+                if operation != BlindfoldOperation.SUM and threshold is not None:
+                    raise ValueError("Only SUM operation supports threshold for ClusterKey")
             else:
                 # Scenario 2: Generate SecretKey (allows seed)
-                if operation == BlindfoldOperation.SUM and threshold is None:
-                    raise ValueError("SUM operation requires threshold for SecretKey")
+                if operation != BlindfoldOperation.SUM and threshold is not None:
+                    raise ValueError("Only SUM operation supports threshold for SecretKey")
 
             self.key = None
             self.operation = operation
