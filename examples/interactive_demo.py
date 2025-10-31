@@ -1012,16 +1012,8 @@ async def update_data_with_filter(builder_client: SecretVaultBuilderClient) -> N
 
     try:
         # Use the specified filter and update
-        filter_data = {
-            "_id": "dd512d0f-31d4-453c-8a07-e84828270984",
-        }
-        update_data = {
-            "$set": {
-                "utm": {
-                    "utm_source": "chatgpt.com",
-                }
-            }
-        }
+        filter_data = {"name": "Sample Item 1"}
+        update_data = {"$set": {"country_code": {"%allot": "MX"}}}
 
         print(f"\n🔍 Using filter to find records: {filter_data}")
         print(f"📝 Update data: {update_data}")
@@ -1140,13 +1132,7 @@ async def delete_data_with_filter(builder_client: SecretVaultBuilderClient) -> N
 
     try:
         # Use the specified filter for Sample Item 2
-        filter_data = {
-            "created_at": {
-                "$gte": "2025-10-27T14:18:00Z",
-                "$lte": "2025-10-28T07:00:00Z",
-            },
-        }
-
+        filter_data = {"name": "Sample Item 2"}
         print(f"\n🗑️  Using filter to delete: {filter_data}")
         print("⚠️  This will delete all records matching the filter!")
 
