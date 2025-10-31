@@ -33,7 +33,7 @@ from secretvaults.dto.users import (
 from secretvaults.user import SecretVaultUserClient
 from secretvaults.common.nuc_cmd import NucCmd
 from secretvaults.dto.builders import RegisterBuilderRequest
-from secretvaults.dto.collections import CreateCollectionRequest
+from secretvaults.dto.collections import CreateCollectionRequest, CreateCollectionIndexRequest
 from secretvaults.dto.data import (
     CreateStandardDataRequest,
     CreateOwnedDataRequest,
@@ -373,53 +373,57 @@ async def create_collection(builder_client: SecretVaultBuilderClient, collection
             print(f"Response Headers: {e.headers}")
 
 
-async def read_collection_metadata(builder_client: SecretVaultBuilderClient) -> None:
-    """Read a specific collection by ID"""
+async def read_collection_metadata(
+    builder_client: SecretVaultBuilderClient,
+    collection_id: Optional[str] = None,
+) -> None:
+    """Read a specific collection by ID. If ID is provided, skip prompt."""
     print("\n=== Read Collection ===")
 
-    # First list collections to show available ones
-    print("Available collections:")
-    collections_response = await builder_client.read_collections()
-    if not collections_response:
-        print("No collections available to read.")
-        return
-
-    # Extract collections data from response
-    if hasattr(collections_response, "data") and collections_response.data:
-        collections_data = collections_response.data
-    else:
-        collections_data = collections_response
-
-    if not collections_data:
-        print("No collections available to read.")
-        return
-
-    # Display collections in a simple format for selection
-    print(f"\n📚 Found {len(collections_data)} collection(s):")
-    for i, collection in enumerate(collections_data, 1):
-        collection_id = None
-        if hasattr(collection, "id"):
-            collection_id = collection.id
-        elif hasattr(collection, "_id"):
-            collection_id = collection._id
-        elif isinstance(collection, dict):
-            collection_id = collection.get("id") or collection.get("_id")
-
-        collection_name = "Unknown"
-        if hasattr(collection, "name"):
-            collection_name = collection.name
-        elif isinstance(collection, dict) and "name" in collection:
-            collection_name = collection["name"]
-
-        print(f"   {i}. {collection_name} (ID: {collection_id})")
-
-    # Get collection ID from user
-    print("\nEnter collection ID to read:")
-    collection_id = input().strip()
-
     if not collection_id:
-        print("No collection ID provided.")
-        return
+        # First list collections to show available ones
+        print("Available collections:")
+        collections_response = await builder_client.read_collections()
+        if not collections_response:
+            print("No collections available to read.")
+            return
+
+        # Extract collections data from response
+        if hasattr(collections_response, "data") and collections_response.data:
+            collections_data = collections_response.data
+        else:
+            collections_data = collections_response
+
+        if not collections_data:
+            print("No collections available to read.")
+            return
+
+        # Display collections in a simple format for selection
+        print(f"\n📚 Found {len(collections_data)} collection(s):")
+        for i, collection in enumerate(collections_data, 1):
+            _cid = None
+            if hasattr(collection, "id"):
+                _cid = collection.id
+            elif hasattr(collection, "_id"):
+                _cid = collection._id
+            elif isinstance(collection, dict):
+                _cid = collection.get("id") or collection.get("_id")
+
+            collection_name = "Unknown"
+            if hasattr(collection, "name"):
+                collection_name = collection.name
+            elif isinstance(collection, dict) and "name" in collection:
+                collection_name = collection["name"]
+
+            print(f"   {i}. {collection_name} (ID: {_cid})")
+
+        # Get collection ID from user
+        print("\nEnter collection ID to read:")
+        collection_id = input().strip()
+
+        if not collection_id:
+            print("No collection ID provided.")
+            return
 
     try:
         print(f"\n📖 Reading collection: {collection_id}")
@@ -656,6 +660,138 @@ async def create_standard_data(builder_client: SecretVaultBuilderClient) -> None
 
     except Exception as e:
         print(f"Failed to create standard data: {e}")
+        if hasattr(e, "status"):
+            print(f"HTTP Status: {e.status}")
+        if hasattr(e, "headers"):
+            print(f"Response Headers: {e.headers}")
+
+
+async def add_collection_index(builder_client: SecretVaultBuilderClient) -> None:
+    """Add an index to a collection"""
+    print("\n=== Add Collection Index ===")
+
+    # List collections to help choose
+    collections_response = await builder_client.read_collections()
+    if not collections_response:
+        print("No collections available.")
+        return
+
+    collections_data = collections_response.data if hasattr(collections_response, "data") else collections_response
+    print(f"\n📚 Found {len(collections_data)} collection(s):")
+    for i, collection in enumerate(collections_data, 1):
+        coll_id = getattr(collection, "id", getattr(collection, "_id", None))
+        coll_name = getattr(collection, "name", "Unknown")
+        print(f"   {i}. {coll_name} (ID: {coll_id})")
+
+    collection_id = input("\nEnter collection ID: ").strip()
+    if not collection_id:
+        print("No collection ID provided.")
+        return
+
+    # Preset index configuration
+    index_name = "new_index_1"
+    keys_list = [{"name": 1}]
+    unique = True
+    ttl_value: float = 0
+
+    try:
+        req = CreateCollectionIndexRequest(
+            collection=collection_id,
+            name=index_name,
+            keys=keys_list,
+            unique=unique,
+            ttl=ttl_value,
+        )
+        result = await builder_client.create_collection_index(collection_id, req)
+        # Detect per-node failures (supports ByNodeName RootModel and dict)
+        node_errors = None
+        try:
+            if hasattr(result, "items"):
+                node_errors = {k: v for k, v in result.items() if isinstance(v, Exception)}
+            elif isinstance(result, dict):
+                node_errors = {k: v for k, v in result.items() if isinstance(v, Exception)}
+        except Exception:
+            node_errors = None
+        if node_errors:
+            print("❌ Failed to create index on one or more nodes.")
+            return
+        print("✅ Index created successfully.")
+
+        # Show updated metadata for the same collection without reprompting
+        await read_collection_metadata(builder_client, collection_id)
+    except Exception as e:
+        print(f"❌ Failed to create index: {e}")
+        if hasattr(e, "status"):
+            print(f"HTTP Status: {e.status}")
+        if hasattr(e, "headers"):
+            print(f"Response Headers: {e.headers}")
+
+
+async def drop_collection_index(builder_client: SecretVaultBuilderClient) -> None:
+    """Drop an index from a collection"""
+    print("\n=== Drop Collection Index ===")
+
+    # List collections and their indexes to help choose
+    collections_response = await builder_client.read_collections()
+    if not collections_response:
+        print("No collections available.")
+        return
+
+    collections_data = collections_response.data if hasattr(collections_response, "data") else collections_response
+    print(f"\n📚 Found {len(collections_data)} collection(s):")
+    for i, collection in enumerate(collections_data, 1):
+        coll_id = getattr(collection, "id", getattr(collection, "_id", None))
+        coll_name = getattr(collection, "name", "Unknown")
+        print(f"   {i}. {coll_name} (ID: {coll_id})")
+
+    collection_id = input("\nEnter collection ID: ").strip()
+    if not collection_id:
+        print("No collection ID provided.")
+        return
+
+    try:
+        metadata_response = await builder_client.read_collection(collection_id)
+        metadata = metadata_response.data if hasattr(metadata_response, "data") else metadata_response
+        indexes = getattr(metadata, "indexes", [])
+        if indexes:
+            print(f"\n📋 Indexes ({len(indexes)}):")
+            for idx in indexes:
+                name = getattr(idx, "name", "")
+                key = getattr(idx, "key", {})
+                unique = getattr(idx, "unique", False)
+                key_str = ", ".join([f"{k}: {v}" for k, v in key.items()])
+                print(f"   - {name} ({key_str}) {'[unique]' if unique else ''}")
+        else:
+            print("\n📋 Indexes: None")
+    except Exception:
+        # Non-fatal for dropping by name
+        pass
+
+    index_name = input("Enter index name to drop: ").strip()
+    if not index_name:
+        print("Index name is required.")
+        return
+
+    try:
+        result = await builder_client.drop_collection_index(collection_id, index_name)
+        # Detect per-node failures (supports ByNodeName RootModel and dict)
+        node_errors = None
+        try:
+            if hasattr(result, "items"):
+                node_errors = {k: v for k, v in result.items() if isinstance(v, Exception)}
+            elif isinstance(result, dict):
+                node_errors = {k: v for k, v in result.items() if isinstance(v, Exception)}
+        except Exception:
+            node_errors = None
+        if node_errors:
+            print("❌ Failed to drop index on one or more nodes.")
+            return
+        print("✅ Index dropped successfully.")
+
+        # Show updated metadata for the same collection without reprompting
+        await read_collection_metadata(builder_client, collection_id)
+    except Exception as e:
+        print(f"❌ Failed to drop index: {e}")
         if hasattr(e, "status"):
             print(f"HTTP Status: {e.status}")
         if hasattr(e, "headers"):
@@ -2533,32 +2669,34 @@ def print_menu():
     print("7.  Create standard collection")
     print("8.  Read collection metadata")
     print("9.  Delete collections")
+    print("10. Add collection index")
+    print("11. Drop collection index")
     print()
     print("DATA:")
-    print("10. Create standard data")
-    print("11. Find data (all)")
-    print("12. Find data (with filter)")
-    print("13. Update data (with filter)")
-    print("14. Delete data (with filter)")
-    print("15. Flush data (remove all)")
+    print("12. Create standard data")
+    print("13. Find data (all)")
+    print("14. Find data (with filter)")
+    print("15. Update data (with filter)")
+    print("16. Delete data (with filter)")
+    print("17. Flush data (remove all)")
     print()
     print("QUERIES:")
-    print("16. List queries")
-    print("17. Create query")
-    print("18. Delete query")
-    print("19. Run query")
+    print("18. List queries")
+    print("19. Create query")
+    print("20. Delete query")
+    print("21. Run query")
     print()
     print("USERS:")
-    print("20. Create owned collection (builder)")
-    print("21. Setup user (generate keypair & create client)")
-    print("22. Create data (with delegation token)")
-    print("23. Read user profile")
-    print("24. List data references")
-    print("25. Read document")
-    print("26. Delete document")
-    print("27. Update document")
-    print("28. Grant access")
-    print("29. Revoke access")
+    print("22. Create owned collection (builder)")
+    print("23. Setup user (generate keypair & create client)")
+    print("24. Create data (with delegation token)")
+    print("25. Read user profile")
+    print("26. List data references")
+    print("27. Read document")
+    print("28. Delete document")
+    print("29. Update document")
+    print("30. Grant access")
+    print("31. Revoke access")
     print()
     print("UTILITIES:")
     print("0.  Exit")
@@ -2591,7 +2729,7 @@ async def main():
 
         while True:
             print_menu()
-            choice = input("Enter your choice (0-29): ").strip()
+            choice = input("Enter your choice (0-31): ").strip()
 
             if choice == "0":
                 print("Goodbye!")
@@ -2615,71 +2753,75 @@ async def main():
             elif choice == "9":
                 await delete_collections(builder_client)
             elif choice == "10":
-                await create_standard_data(builder_client)
+                await add_collection_index(builder_client)
             elif choice == "11":
-                await find_data_all(builder_client)
+                await drop_collection_index(builder_client)
             elif choice == "12":
-                await find_data_with_filter(builder_client)
+                await create_standard_data(builder_client)
             elif choice == "13":
-                await update_data_with_filter(builder_client)
+                await find_data_all(builder_client)
             elif choice == "14":
-                await delete_data_with_filter(builder_client)
+                await find_data_with_filter(builder_client)
             elif choice == "15":
-                await flush_data_with_collection(builder_client)
+                await update_data_with_filter(builder_client)
             elif choice == "16":
-                await get_queries(builder_client)
+                await delete_data_with_filter(builder_client)
             elif choice == "17":
-                await create_query(builder_client)
+                await flush_data_with_collection(builder_client)
             elif choice == "18":
-                await delete_query(builder_client)
+                await get_queries(builder_client)
             elif choice == "19":
-                await run_query(builder_client)
+                await create_query(builder_client)
             elif choice == "20":
-                await create_collection(builder_client, "owned")
+                await delete_query(builder_client)
             elif choice == "21":
-                user_client = await setup_user()
+                await run_query(builder_client)
             elif choice == "22":
-                if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
-                else:
-                    await create_owned_data(builder_client, user_client)
+                await create_collection(builder_client, "owned")
             elif choice == "23":
-                if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
-                else:
-                    await read_user_profile(user_client)
+                user_client = await setup_user()
             elif choice == "24":
                 if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
+                    print("❌ No user client available. Please setup a user first (option 23).")
                 else:
-                    await list_data_references(user_client)
+                    await create_owned_data(builder_client, user_client)
             elif choice == "25":
                 if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
+                    print("❌ No user client available. Please setup a user first (option 23).")
                 else:
-                    await read_document(user_client)
+                    await read_user_profile(user_client)
             elif choice == "26":
                 if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
+                    print("❌ No user client available. Please setup a user first (option 23).")
                 else:
-                    await delete_document(user_client)
+                    await list_data_references(user_client)
             elif choice == "27":
                 if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
+                    print("❌ No user client available. Please setup a user first (option 23).")
                 else:
-                    await update_document(user_client)
+                    await read_document(user_client)
             elif choice == "28":
                 if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
+                    print("❌ No user client available. Please setup a user first (option 23).")
                 else:
-                    await grant_access(user_client)
+                    await delete_document(user_client)
             elif choice == "29":
                 if user_client is None:
-                    print("❌ No user client available. Please setup a user first (option 21).")
+                    print("❌ No user client available. Please setup a user first (option 23).")
+                else:
+                    await update_document(user_client)
+            elif choice == "30":
+                if user_client is None:
+                    print("❌ No user client available. Please setup a user first (option 23).")
+                else:
+                    await grant_access(user_client)
+            elif choice == "31":
+                if user_client is None:
+                    print("❌ No user client available. Please setup a user first (option 23).")
                 else:
                     await revoke_access(user_client)
             else:
-                print("Invalid choice. Please enter a number between 0 and 29.")
+                print("Invalid choice. Please enter a number between 0 and 31.")
 
             input("\nPress Enter to continue...")
 

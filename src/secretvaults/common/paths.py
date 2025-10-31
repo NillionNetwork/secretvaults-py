@@ -3,7 +3,7 @@ API endpoint paths for Nildb client, matching the TypeScript NilDbEndpoint struc
 """
 # pylint: disable=invalid-name,disable=too-few-public-methods
 
-class NilDbEndpoint: 
+class NilDbEndpoint:
     """Root of all API endpoint paths for the Nildb client, matching the TypeScript NilDbEndpoint structure."""
 
     class v1:
