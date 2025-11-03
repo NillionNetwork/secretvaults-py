@@ -2732,6 +2732,8 @@ async def main():
             choice = input("Enter your choice (0-31): ").strip()
 
             if choice == "0":
+                if user_client:
+                    await user_client.close()
                 print("Goodbye!")
                 break
             elif choice == "1":
