@@ -228,6 +228,20 @@ class NilDbBaseClient:
         )
         return response
 
+    def _prepare_request_body(self, body: Any) -> Dict[str, Any]:
+        """
+        Convert Pydantic model or dict to dict for request body.
+        
+        Args:
+            body: Pydantic model or dictionary
+            
+        Returns:
+            Dictionary representation of the body
+        """
+        if hasattr(body, "model_dump") and not isinstance(body, dict):
+            return body.model_dump(by_alias=True)
+        return body
+
     async def __aenter__(self):
         """Async context manager entry."""
         return self
