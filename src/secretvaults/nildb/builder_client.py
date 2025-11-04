@@ -163,11 +163,7 @@ class NilDbBuilderClient(NilDbBaseClient):  # pylint: disable=too-many-public-me
 
     async def create_standard_data(self, token: str, body: CreateStandardDataRequest) -> CreateDataResponse:
         """Upload standard data records to a schema-validated collection."""
-        # Handle both Pydantic models and dictionaries
-        if hasattr(body, "model_dump") and not isinstance(body, dict):
-            body_data = body.model_dump(by_alias=True)
-        else:
-            body_data = body
+        body_data = self._prepare_request_body(body)
 
         return await self.request(
             AuthenticatedRequestOptions(
@@ -178,11 +174,7 @@ class NilDbBuilderClient(NilDbBaseClient):  # pylint: disable=too-many-public-me
 
     async def find_data(self, token: str, body: FindDataRequest) -> FindDataResponse:
         """Search for data matching the provided filter."""
-        # Handle both Pydantic models and dictionaries
-        if hasattr(body, "model_dump") and not isinstance(body, dict):
-            body_data = body.model_dump(by_alias=True)
-        else:
-            body_data = body
+        body_data = self._prepare_request_body(body)
         return await self.request(
             AuthenticatedRequestOptions(path=NilDbEndpoint.v1.data.find, method="POST", body=body_data, token=token),
             FindDataResponse,
@@ -190,11 +182,7 @@ class NilDbBuilderClient(NilDbBaseClient):  # pylint: disable=too-many-public-me
 
     async def update_data(self, token: str, body: UpdateDataRequest) -> UpdateDataResponse:
         """Update data records matching the provided filter."""
-        # Handle both Pydantic models and dictionaries
-        if hasattr(body, "model_dump") and not isinstance(body, dict):
-            body_data = body.model_dump(by_alias=True)
-        else:
-            body_data = body
+        body_data = self._prepare_request_body(body)
         return await self.request(
             AuthenticatedRequestOptions(path=NilDbEndpoint.v1.data.update, method="POST", body=body_data, token=token),
             UpdateDataResponse,
@@ -202,11 +190,7 @@ class NilDbBuilderClient(NilDbBaseClient):  # pylint: disable=too-many-public-me
 
     async def delete_data(self, token: str, body: DeleteDataRequest) -> DeleteDataResponse:
         """Delete data records matching the provided filter."""
-        # Handle both Pydantic models and dictionaries
-        if hasattr(body, "model_dump") and not isinstance(body, dict):
-            body_data = body.model_dump(by_alias=True)
-        else:
-            body_data = body
+        body_data = self._prepare_request_body(body)
 
         return await self.request(
             AuthenticatedRequestOptions(path=NilDbEndpoint.v1.data.delete, method="POST", body=body_data, token=token),

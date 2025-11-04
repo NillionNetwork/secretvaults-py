@@ -17,8 +17,6 @@ from .common.keypair import Keypair
 from .common.utils import into_seconds_from_now, inject_ids_into_records
 from .common.cluster import (
     execute_on_cluster,
-    prepare_concealed_request,
-    prepare_plaintext_request,
     process_concealed_list_response,
     process_plaintext_response,
 )
@@ -322,11 +320,7 @@ class SecretVaultBuilderClient(SecretVaultBaseClient[NilDbBuilderClient]):  # py
         """Creates standard data on all nodes."""
         create_body = inject_ids_into_records(body)
 
-        node_payloads = (
-            await prepare_concealed_request({"key": self._options.key, "clients": self.nodes, "body": create_body})
-            if self._options.key
-            else prepare_plaintext_request({"clients": self.nodes, "body": create_body})
-        )
+        node_payloads = await self._prepare_node_payloads(create_body)
 
         # Execute on all nodes
         result = await execute_on_cluster(
@@ -475,11 +469,7 @@ class SecretVaultBuilderClient(SecretVaultBaseClient[NilDbBuilderClient]):  # py
     async def update_data(self, body: UpdateDataRequest) -> Dict[Did, UpdateDataResponse]:
         """Updates data on all nodes."""
         # Prepare request payloads
-        node_payloads = (
-            await prepare_concealed_request({"key": self._options.key, "clients": self.nodes, "body": body})
-            if self._options.key
-            else prepare_plaintext_request({"clients": self.nodes, "body": body})
-        )
+        node_payloads = await self._prepare_node_payloads(body)
 
         result = await execute_on_cluster(
             self.nodes,

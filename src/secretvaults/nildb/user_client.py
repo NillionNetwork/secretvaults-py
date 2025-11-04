@@ -43,11 +43,7 @@ class NilDbUserClient(NilDbBaseClient):
 
     async def create_owned_data(self, token: str, body: CreateOwnedDataRequest) -> CreateDataResponse:
         """Create user-owned data in an owned collection."""
-        # Handle both Pydantic models and dictionaries
-        if hasattr(body, "model_dump") and not isinstance(body, dict):
-            body_data = body.model_dump(by_alias=True)
-        else:
-            body_data = body
+        body_data = self._prepare_request_body(body)
 
         Log.info(f"Creating owned data with body: {body_data}")
 
@@ -112,9 +108,13 @@ class NilDbUserClient(NilDbBaseClient):
 
     async def update_data(self, token: str, body: UpdateUserDataRequest) -> None:
         """Update a user-owned data document."""
+        body_data = self._prepare_request_body(body)
         return await self.request(
             AuthenticatedRequestOptions(
-                path=NilDbEndpoint.v1.users.data.root, method="POST", body=body.model_dump(by_alias=True), token=token
+                path=NilDbEndpoint.v1.users.data.root,
+                method="POST",
+                body=body_data,
+                token=token,
             )
         )
 

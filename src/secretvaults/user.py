@@ -16,8 +16,6 @@ from .base import SecretVaultBaseClient, SecretVaultBaseOptions
 from .common.blindfold import BlindfoldFactoryConfig, to_blindfold_key
 from .common.cluster import (
     execute_on_cluster,
-    prepare_concealed_request,
-    prepare_plaintext_request,
     process_concealed_object_response,
     process_plaintext_response,
 )
@@ -126,15 +124,8 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
         """Creates one or more data documents owned by the user."""
         create_body = inject_ids_into_records(body)
 
-        key = self._options.key
-        clients = self.nodes
-
         # Prepare map of node-id to node-specific payload
-        node_payloads = (
-            await prepare_concealed_request({"key": key, "clients": clients, "body": create_body})
-            if key
-            else prepare_plaintext_request({"clients": clients, "body": create_body})
-        )
+        node_payloads = await self._prepare_node_payloads(create_body)
 
         # Execute on all nodes
         def create_invocation_token(client):
@@ -168,7 +159,7 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
                 "user": self.id,
                 "collection": body.collection,
                 "documents": len(body.data),
-                "concealed": key is not None,
+                "concealed": self._options.key is not None,
             },
             "User data created",
         )
@@ -361,6 +352,9 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
 
     async def update_data(self, body: UpdateUserDataRequest) -> Dict[Did, None]:
         """Updates a user-owned document on all nodes."""
+        # Prepare request payloads
+        node_payload_update = await self._prepare_node_payloads(body)
+
         result = await execute_on_cluster(
             self.nodes,
             lambda client: client.update_data(
@@ -368,7 +362,7 @@ class SecretVaultUserClient(SecretVaultBaseClient[NilDbUserClient]):
                     command=NucCmd.NIL_DB_USERS_UPDATE,
                     audience=client.id,
                 ),
-                body,
+                node_payload_update[client.id],
             ),
         )
         Log.info(
